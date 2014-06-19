@@ -34,7 +34,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 /**
- *
+ * This class represents a panel which has only one child visible. To change the visible child, the user
+ * must press the lateral arrows.
  * @author Xavier
  */
 public class CarouselPanel extends JPanel {
@@ -44,9 +45,24 @@ public class CarouselPanel extends JPanel {
                                DEFAULT_ARROWS_PREFERRED_HEIGHT = 30;
     
     //Attributes
+    /**
+     * The layout of the internal content panel.
+     */
     private CardLayout contentLayout;
+    
+    /**
+     * The container of the childs of the panel.
+     */
     private JPanel contentPanel;
+    
+    /**
+     * The color of the arrows.
+     */
     private Color arrowsColor;
+    
+    /**
+     * The arrows' preferred size.
+     */
     private Dimension arrowsPreferredSize;
     
     //Public Constructors
@@ -61,34 +77,61 @@ public class CarouselPanel extends JPanel {
     //Overridden Methods
     @Override
     protected void addImpl(Component comp, Object constraints, int index) {
+        //All the children of the panel are really put into the internal panel
         this.contentPanel.add(comp, index);
     }
 
     @Override
-    public void setLayout(LayoutManager mgr) {}
+    public void setLayout(LayoutManager mgr) {
+        //Void on purpouse. The user mustn't change the panel's layout
+    }
     
     //Public Methods
+    /**
+     * Returns the current's color of the arrows.
+     * @return the color
+     */
     public Color getArrowsColor() {
         return arrowsColor;
     }
 
+    /**
+     * Sets the color of the arrows.
+     * @param arrowsColor the color
+     */
     public void setArrowsColor(Color arrowsColor) {
         this.arrowsColor = arrowsColor;
     }
 
+    /**
+     * Returns the preferred size of the arrows.
+     * @return the preferred size
+     */
     public Dimension getArrowsPreferredSize() {
         return arrowsPreferredSize;
     }
 
+    /**
+     * Sets the arrows' preferred size.
+     * @param width the preferred width
+     * @param height the preferred height
+     */
     public void setArrowsPreferredSize(int width, int height) {
         this.arrowsPreferredSize.setSize(width, height);
     }
     
+    /**
+     * Sets the arrows' preferred size.
+     * @param arrowsPreferredSize the preferred size
+     */
     public void setArrowsPreferredSize(Dimension arrowsPreferredSize) {
         this.arrowsPreferredSize.setSize(arrowsPreferredSize);
     }
     
     //Private Methods
+    /**
+     * Adds the container panel and arrows' panels with a BorderLayout distribution.
+     */
     private void initComponents() {
         JComponent leftArrowComponent, rightArrowComponent;
         
@@ -106,6 +149,10 @@ public class CarouselPanel extends JPanel {
         super.addImpl(rightArrowComponent, BorderLayout.EAST, 2);
     }
     
+    /**
+     * Returns the left arroy component to be added to the panel.
+     * @return the component
+     */
     private JComponent createLeftArrowComponent() {
         JComponent component;
         
@@ -115,6 +162,8 @@ public class CarouselPanel extends JPanel {
                 int arrowWidth, arrowHeight, preferredWidth, preferredHeight;
                 double x1, y1, x2, y2, y3, x3;
                 Graphics2D g2d;
+                
+                //Paint a centered triangle pointing to the left 
                 
                 g2d             = (Graphics2D)g;
                 preferredWidth  = CarouselPanel.this.arrowsPreferredSize.width;
@@ -140,6 +189,7 @@ public class CarouselPanel extends JPanel {
         component.addMouseListener(new MouseListener() {
             @Override
             public void mouseReleased(MouseEvent e) {
+                //Change the visible children of the panel
                 CarouselPanel.this.contentLayout.previous(CarouselPanel.this.contentPanel);
             }
             
@@ -156,6 +206,10 @@ public class CarouselPanel extends JPanel {
         return component;
     }
     
+    /**
+     * Returns the right arroy component to be added to the panel.
+     * @return the component
+     */
     private JComponent createRightArrowComponent() {
         JComponent component;
         
@@ -165,6 +219,8 @@ public class CarouselPanel extends JPanel {
                 int arrowWidth, arrowHeight, preferredWidth, preferredHeight;
                 double x1, y1, x2, y2, y3, x3;
                 Graphics2D g2d;
+                
+                //Paint a centered triangle pointing to the left 
                 
                 g2d             = (Graphics2D)g;
                 preferredWidth  = CarouselPanel.this.arrowsPreferredSize.width;
@@ -190,6 +246,7 @@ public class CarouselPanel extends JPanel {
         component.addMouseListener(new MouseListener() {
             @Override
             public void mouseReleased(MouseEvent e) {
+                //Change the visible children of the panel
                 CarouselPanel.this.contentLayout.next(CarouselPanel.this.contentPanel);
             }
             

@@ -35,11 +35,6 @@ public class ZombieAgent extends BaseAgent<ZombiePerceptions, ZombieAction> {
      */
     private final static int MOVEMENT_DEGREES  = 90;
     
-    /**
-     * Minimum allowed distance to a wall.
-     */
-    private final double MIN_WALL_DISTANCE;
-    
     //Attributes
     /**
      * A zombie action object.
@@ -51,13 +46,20 @@ public class ZombieAgent extends BaseAgent<ZombiePerceptions, ZombieAction> {
      */
     private final int olfactoryDistance;
     
+    /**
+     * Agent's speed at rest in the environment.
+     */
+    private final int speedAtRest;
+    
+    
     //Public Constructors
-    public ZombieAgent(int agentWidth, int agentHeight, int visionDistance, int olfactoryDistance) {
-        super(agentWidth, agentHeight, visionDistance);
+    public ZombieAgent(int agentWidth, int agentHeight, int visionDistance, int olfactoryDistance,
+                       int speed, int speedAtRest) {
+        super(agentWidth, agentHeight, visionDistance, speed);
         
         this.action            = new ZombieAction();
         this.olfactoryDistance = olfactoryDistance;
-        this.MIN_WALL_DISTANCE = Math.hypot(agentWidth, agentHeight) / 2 + 1;
+        this.speedAtRest       = speedAtRest;
         
         this.action.setMove(0, 1);
     }
@@ -84,7 +86,7 @@ public class ZombieAgent extends BaseAgent<ZombiePerceptions, ZombieAction> {
             this.setMoveWhenHumansAreSmelled(smelledHumans);
         }
         else {
-            this.setMoveWhenThereAreNotEnemies(ZombieAgent.MOVEMENT_DEGREES, this.MIN_WALL_DISTANCE, 
+            this.setMoveWhenThereAreNotEnemies(ZombieAgent.MOVEMENT_DEGREES, this.speedAtRest, 
                                                walls, this.action);
         }
         

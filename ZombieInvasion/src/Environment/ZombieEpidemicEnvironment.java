@@ -684,7 +684,7 @@ public class ZombieEpidemicEnvironment extends Environment {
     private void generatePopulation() {
         final int initiallyHealthy, initiallyInfected, initiallyZombified, latencyPeriod, 
                   agentWidth, agentHeight, humanVisionDistance, zombieVisionDistance,
-                  zombieOlfactoryDistance;
+                  zombieOlfactoryDistance, humanSpeed, zombieSpeed, zombieSpeedAtRest;
         final double agentMinX, agentMinY, agentMaxX, agentMaxY;
         double humanX, humanY, zombieX, zombieY;
         boolean accessibleCells[][];
@@ -703,8 +703,11 @@ public class ZombieEpidemicEnvironment extends Environment {
         initiallyInfected       = this.configuration.getPopulation().getInitiallyInfected();
         initiallyZombified      = this.configuration.getPopulation().getInitiallyZombified();
         humanVisionDistance     = this.configuration.getHuman().getVisionDistance();
+        humanSpeed              = this.configuration.getHuman().getSpeed();
         zombieVisionDistance    = this.configuration.getZombieEpidemic().getZombieVisionDistance();
         zombieOlfactoryDistance = this.configuration.getZombieEpidemic().getZombieOlfactoryDistance();
+        zombieSpeed             = this.configuration.getZombieEpidemic().getZombieSpeed();
+        zombieSpeedAtRest       = this.configuration.getZombieEpidemic().getZombieSpeedAtRest();
         latencyPeriod           = this.configuration.getZombieEpidemic().getInfectedLatencyPeriod();
         accessibleCells         = this.getAccessibleCells();
         
@@ -712,7 +715,7 @@ public class ZombieEpidemicEnvironment extends Environment {
         humanX = agentMinX;
         humanY = agentMaxY;
         for(int i = 0; i < initiallyHealthy; i++) {
-            humanAgent       = new HumanAgent(agentWidth, agentHeight, humanVisionDistance);
+            humanAgent       = new HumanAgent(agentWidth, agentHeight, humanVisionDistance, humanSpeed);
             humanInformation = new HumanInformation(HumanHealthStatus.Healthy, humanX, humanY, latencyPeriod, false, 0);
             
             if(this.agentCanBePlaced(humanX, humanY, agentWidth, agentHeight, accessibleCells)) {
@@ -740,7 +743,7 @@ public class ZombieEpidemicEnvironment extends Environment {
         
         //Generate the infected humans
         for(int i = 0; i < initiallyInfected; i++) {
-            humanAgent       = new HumanAgent(agentWidth, agentHeight, humanVisionDistance);
+            humanAgent       = new HumanAgent(agentWidth, agentHeight, humanVisionDistance, humanSpeed);
             humanInformation = new HumanInformation(HumanHealthStatus.Infected, humanX, humanY, latencyPeriod, false, 0);
             
             if(this.agentCanBePlaced(humanX, humanY, agentWidth, agentHeight, accessibleCells)) {
@@ -777,7 +780,8 @@ public class ZombieEpidemicEnvironment extends Environment {
                                                  + "Disminueixi el tamany de la població o augmenti el tamany de l'escentari.");
             }
             
-            zombieAgent       = new ZombieAgent(agentWidth, agentHeight, zombieVisionDistance, zombieOlfactoryDistance);
+            zombieAgent       = new ZombieAgent(agentWidth, agentHeight, zombieVisionDistance, zombieOlfactoryDistance,
+                                                zombieSpeed, zombieSpeedAtRest);
             zombieInformation = new ZombieInformation(zombieX, zombieY);
             
             if(this.agentCanBePlaced(zombieX, zombieY, agentWidth, agentHeight, accessibleCells)) {
@@ -1123,7 +1127,7 @@ public class ZombieEpidemicEnvironment extends Environment {
                if(distance <= visionDistance) {
                    //Clips the line within the vision area of the agent.
                    //The coordinates of the clipped line will be relative to the agent position
-                   visibleWall = GeometryUtils.clipLine(- visionDistance, - visionDistance, 2 * visionDistance, 2 * visionDistance,
+                   visibleWall = GeometryUtils.clipLine(- visionDistance, - visionDistance, visionDistance, visionDistance,
                                                         wall.x1 - x, wall.y1 - y, wall.x2 - x, wall.y2 - y);
                     
                    //Add the clipped line to the agent's perceptions
@@ -1302,20 +1306,14 @@ public class ZombieEpidemicEnvironment extends Environment {
         oldY                   = agentPosition.getY();
         newX                   = oldX + agentSpeed * agentDirection.getDirectionX();
         newY                   = oldY + agentSpeed * agentDirection.getDirectionY();
-        nearestWallInDirection = this.getNearestWallInDirection(agentPosition, agentDirection);
-
+        nearestWallInDirection = this.getNearestWallInDirection(agentPosition, agentDirection, agentSpeed + minWallDistance);
+        
         if(nearestWallInDirection != null) {
-            //There are a wall in the trajectory of the agent's movement
-            
-            newWallDistance = nearestWallInDirection.ptSegDist(newX, newY);
-
             //Update the agent's position without trespassing the wall
-            if(newWallDistance < minWallDistance || nearestWallInDirection.intersectsLine(oldX, oldY, newX, newY)) {
-                oldWallDistance = nearestWallInDirection.ptSegDist(oldX, oldY);
-                newWallDistance = oldWallDistance - minWallDistance;
-                newX            = oldX + newWallDistance * agentDirection.getDirectionX();
-                newY            = oldY + newWallDistance * agentDirection.getDirectionY();
-            }
+            oldWallDistance = nearestWallInDirection.ptSegDist(oldX, oldY);
+            newWallDistance = oldWallDistance - minWallDistance;
+            newX            = oldX + newWallDistance * agentDirection.getDirectionX();
+            newY            = oldY + newWallDistance * agentDirection.getDirectionY();
         }
         
         //Update the agent position
@@ -1526,7 +1524,7 @@ public class ZombieEpidemicEnvironment extends Environment {
         ZombieAgent newAgent;
         ZombieInformation newInformation;
         final int cellWidth, cellHeight, agentWidth, agentHeight, zombieVisionDistance,
-                  zombieOlfactoryDistance;
+                  zombieOlfactoryDistance, zombieSpeed, zombieSpeedAtRest;
         int phasesToZombify, row, column; 
         Point2D position;
         Iterator<HumanAgent> infectedHumansIterator;
@@ -1539,6 +1537,8 @@ public class ZombieEpidemicEnvironment extends Environment {
         cellHeight              = this.configuration.getEnvironment().getCellHeight();
         zombieVisionDistance    = this.configuration.getZombieEpidemic().getZombieVisionDistance();
         zombieOlfactoryDistance = this.configuration.getZombieEpidemic().getZombieOlfactoryDistance();
+        zombieSpeed             = this.configuration.getZombieEpidemic().getZombieSpeed();
+        zombieSpeedAtRest       = this.configuration.getZombieEpidemic().getZombieSpeedAtRest();
         
         while(infectedHumansIterator.hasNext()) {
             agent           = infectedHumansIterator.next();
@@ -1554,7 +1554,7 @@ public class ZombieEpidemicEnvironment extends Environment {
                 
                 newInformation = new ZombieInformation(information);
                 newAgent       = new ZombieAgent(agentWidth, agentHeight, zombieVisionDistance, 
-                                                 zombieOlfactoryDistance);
+                                                 zombieOlfactoryDistance, zombieSpeed, zombieSpeedAtRest);
                 position       = information.getPosition();
                 row            = (int)(position.getY() / cellHeight);
                 column         = (int)(position.getX() / cellWidth);
@@ -1793,14 +1793,7 @@ public class ZombieEpidemicEnvironment extends Environment {
         return injuredAgent != null;
     }
     
-    /**
-     * Check if there is a wall between two points.
-     * @param x1 the X component of the first point
-     * @param y1 the Y component of the first point
-     * @param x2 the X component of the second point
-     * @param y2 the Y component of the second point
-     * @return <code>true</code> if there are a wall, <code>false</code> otherwise 
-     */
+    
     private boolean thereIsAWallBetween(double x1, double y1, double x2, double y2) {
         boolean thereIsAWallBetween;
         
@@ -1835,9 +1828,10 @@ public class ZombieEpidemicEnvironment extends Environment {
      * Returns the nearest wall from a point in a given direction.
      * @param position the reference point
      * @param direction the direction
+     * @param maxDist maximum distance to be considered
      * @return the nearest wall found
      */
-    private EnvironmentWall getNearestWallInDirection(Point2D position, Vector2D direction) {
+    private EnvironmentWall getNearestWallInDirection(Point2D position, Vector2D direction, double maxDist) {
         final int environmentWidth, environmentHeight;
         final double x1, y1, x2, y2, environmentHypot;
         double squaredWallDistance, minSquaredWallDistance;
@@ -1857,7 +1851,7 @@ public class ZombieEpidemicEnvironment extends Environment {
             for(EnvironmentWall wall: this.walls) {
                 squaredWallDistance = wall.ptSegDistSq(x1, y1);
                 
-                if(squaredWallDistance < minSquaredWallDistance && wall.intersectsLine(x1, y1, x2, y2)) {
+                if(squaredWallDistance < maxDist * maxDist && squaredWallDistance < minSquaredWallDistance && wall.intersectsLine(x1, y1, x2, y2)) {
                     nearestWall            = wall;
                     minSquaredWallDistance = squaredWallDistance;
                 }
@@ -1866,6 +1860,7 @@ public class ZombieEpidemicEnvironment extends Environment {
         
         return nearestWall;
     }
+    
     
     /**
      * Vaccines healthy population.

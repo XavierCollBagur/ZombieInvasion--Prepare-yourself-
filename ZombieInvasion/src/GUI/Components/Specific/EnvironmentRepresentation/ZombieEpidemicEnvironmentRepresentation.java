@@ -41,7 +41,8 @@ import java.util.Collection;
 import javax.swing.JPanel;
 
 /**
- *
+ * This class represents a Swing component that paints a simulation environment
+ * (cells, agents, walls, etc.).
  * @author Xavier
  */
 public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
@@ -63,9 +64,26 @@ public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
                                AGENT_CONTOUR_WIDTH = 1.1f;
     
     //Attributes
+    /**
+     * The environment configuration of the simulation to paint.
+     */
     private EnvironmentConfiguration environmentConfiguration;
+    
+    /**
+     * The environment information of the simulation to paint.
+     */
     private ZombieEpidemicEnvironmentInformation environmentInformation; 
+    
+    /**
+     * Boolean value indicating if the representation must mantain the aspect
+     * ratio of the elements.
+     */
     private boolean mantainAspectRatio;
+    
+    /**
+     * The anchor position of the painting in the case that the aspect ratio must
+     * be mantained.
+     */
     private Anchor mantainAspectRatioAnchor;
     
     //Public Constructors
@@ -111,45 +129,85 @@ public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
         g2d.translate(measures.getX0(), measures.getY0());
         g2d.scale(measures.getHorizontalGrowthFactor(), measures.getVerticalGrowthFactor());
        
-        this.paintGrid(g2d, inaccessibleCells);        
+        this.paintGrid(g2d);        
         this.paintPopulation(g2d, deadPopulation, alivePopulation);
+        this.paintInaccessibleCells(g2d, inaccessibleCells);
         this.paintWalls(g2d, walls);
         this.paintHumanShots(g2d, shots);
     }
     
     //Public Methods
+    /**
+     * Checks if the aspect ratio is mantained.
+     * @return <code>true</code> if the aspect ratio is mantained, <code>false</code> otherwise.
+     */
     public boolean isMantainAspectRatio() {
         return this.mantainAspectRatio;
     }
     
+    /**
+     * Returns the anchor position of the painting in the case that the aspect ratio must
+     * be mantained.
+     * @return the anchor position
+     */
     public Anchor getMantainAspectRatioAnchor() {
         return this.mantainAspectRatioAnchor; 
     }
 
+    /**
+     * Returns the environment configuration used.
+     * @return the environmetn configuration
+     */
     public EnvironmentConfiguration getEnvironmentConfiguration() {
         return this.environmentConfiguration;
     }
 
+    /**
+     * Returns the environment information used.
+     * @return the environment information
+     */
     public ZombieEpidemicEnvironmentInformation getEnvironmentInformation() {
         return this.environmentInformation;
     }
    
+    /**
+     * Indicates if the representation must mantain the aspect ratio.
+     * @param mantainAspectRatio the boolean value indicating if representation must mantain the aspect ratio
+     */
     public void setMantainAspectRatio(boolean mantainAspectRatio) {
         this.mantainAspectRatio = mantainAspectRatio;
     }
 
+    /**
+     * Sets the anchor position of the painting in the case that the aspect ratio must
+     * be mantained.
+     * @param mantainAspectRatioAnchor the anchor position
+     */
     public void setMantainAspectRatioAnchor(Anchor mantainAspectRatioAnchor) {
         this.mantainAspectRatioAnchor = mantainAspectRatioAnchor;
     }
 
+    /**
+     * Sets the environment configuration used.
+     * @param environmentConfiguration the environment configuration
+     */
     public void setEnvironmentConfiguration(EnvironmentConfiguration environmentConfiguration) {
         this.environmentConfiguration = environmentConfiguration;
     }
 
+    /**
+     * Sets the environment information used.
+     * @param environmentInformation the environment information
+     */
     public void setEnvironmentInformation(ZombieEpidemicEnvironmentInformation environmentInformation) {
         this.environmentInformation = environmentInformation;
     }
     
+    /**
+     * Translates a point in the component coordinates into a point in the simulation coordinates.
+     * @param environmentRepresentationPoint the point in component coordinates
+     * @return the point in simulation coordinates
+     */
     public Point2D getEnvironmentPoint(Point2D environmentRepresentationPoint) {
         double environmentPointX, environmentPointY;
         Point2D environmentPoint;
@@ -161,6 +219,7 @@ public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
         drawingRectangle = this.getDrawingRectangle();
         
         if(drawingRectangle.contains(environmentRepresentationPoint)) {
+            //Translate the point to the origin and invert the scalation factor.
             environmentPointX = (environmentRepresentationPoint.getX() - drawingRectangle.getMinX()) / measures.getHorizontalGrowthFactor();
             environmentPointY = (environmentRepresentationPoint.getY() - drawingRectangle.getMinY()) / measures.getVerticalGrowthFactor();
             environmentPoint  = new Point2D.Double(environmentPointX, environmentPointY);
@@ -169,15 +228,22 @@ public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
         return environmentPoint;
     }
     
+    /**
+     * Return the cell of a point in component coordinates.
+     * @param environmentRepresentationPoint the point
+     * @return the cell
+     */
     public Cell getEnvironmentCell(Point2D environmentRepresentationPoint) {
         final int cellWidth, cellHeight, row, column;
         Point2D environmentPoint;
         Cell cell;
         
+        //Get the point in simulation coordinates
         environmentPoint = this.getEnvironmentPoint(environmentRepresentationPoint);
         cell             = null;
         
         if(environmentPoint != null) {
+            //Calculate the cell of the point
             cellWidth  = this.environmentConfiguration.getCellWidth();
             cellHeight = this.environmentConfiguration.getCellHeight();
             row        = (int)(environmentPoint.getY() / cellHeight);
@@ -189,6 +255,10 @@ public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
     }
     
     //Private Methods
+    /**
+     * Calculates the measures needed to paint the representation.
+     * @return the measures
+     */
     private EnvironmentMeasures getMeasures() {
         int minEnvironmentWidth, minEnvironmentHeight;
         double environmentWidth, environmentHeight, 
@@ -208,6 +278,10 @@ public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
         return new EnvironmentMeasures(x0, y0, horizontalGrowthFactor, verticalGrowthFactor);
     }
     
+    /**
+     * Returns the rectangular coordinates of the component where the representation will be painted.
+     * @return the rectangular coordinates
+     */
     private Rectangle2D getDrawingRectangle() {
         double x, y, width, height, environmentWidth, environmentHeight, 
                newWidth, newHeight, aspectRatio;
@@ -224,6 +298,10 @@ public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
             newWidth          = height * aspectRatio;
             
             if(newWidth <= width) {
+                //The width of the scaled environment fits in the available component width.
+                //The height of the scaled environment will be maximum.
+                
+                //Calculate the horizontal origin point
                 if(this.mantainAspectRatioAnchor.isHorizontalCentered()) {
                     x += (width - newWidth) / 2;
                 }
@@ -234,7 +312,11 @@ public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
                 width = newWidth;
             }
             else {
+                //The width of the scaled environment doesn't fits in the available component width.
+                //Scale the height of the environment and use all the available component width.
                 newHeight = width / aspectRatio;
+                
+                //Calculate the vertical origin point
                 if(this.mantainAspectRatioAnchor.isVerticalCentered()) {
                     y += (height - newHeight) / 2;
                 }
@@ -249,7 +331,11 @@ public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
         return new Rectangle2D.Double(x, y, width, height);
     }
     
-    private void paintGrid(Graphics2D g2d, Collection<Cell> inaccessibleCells) {
+    /**
+     * Paints the grid of the environment.
+     * @param g2d the Graphics2D object used to paint the component
+     */
+    private void paintGrid(Graphics2D g2d) {
         final int rows, columns, cellWidth, cellHeight, environmentWidth, environmentHeight;
         final double xMin, yMin, xMax, yMax;
         double x, y;
@@ -300,9 +386,25 @@ public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
         y = yMin + cellHeight * rows - 0.1;
         line.setLine(xMin, y, xMax, y);
         g2d.draw(line);
-        
-        //Paint inaccessible cells
+    }
+    
+    /**
+     * Paints the inaccessible cells of the environment.
+     * @param g2d the Graphics2D object used to paint the component
+     * @param inaccessibleCells the list of inaccessible cells
+     */
+    private void paintInaccessibleCells(Graphics2D g2d, Collection<Cell> inaccessibleCells) {
+        final int cellWidth, cellHeight;
+        final double xMin, yMin;
+        double x, y;
+        Rectangle2D rectangle;
         g2d.setColor(INACCESSIBLE_CELL_COLOR);
+        
+        cellWidth         = this.environmentConfiguration.getCellWidth();
+        cellHeight        = this.environmentConfiguration.getCellHeight();
+        xMin              = 0;
+        yMin              = 0;
+        rectangle         = new Rectangle2D.Double();
         
         for(Cell cell: inaccessibleCells) {
             x = xMin + cell.getColumn() * cellWidth;
@@ -313,6 +415,12 @@ public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
         }
     }
     
+    /**
+     * Paints the agents of the environment.
+     * @param g2d the Graphics2D object used to paint the component
+     * @param deadPopulation the list of dead agents of the environment
+     * @param alivePopulation the list of alive agents of the environment
+     */
     private void paintPopulation(Graphics2D g2d, Collection<BaseInformation> deadPopulation, 
                                  Collection<BaseInformation> alivePopulation) {
         
@@ -328,6 +436,13 @@ public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
         paintPopulation(g2d, alivePopulation, agentWidth, agentHeight);
     }
     
+    /**
+     * Paints a list of agents.
+     * @param g2d the Graphics2D object used to paint the component
+     * @param population the list of agents
+     * @param agentWidth the width of an agent
+     * @param agentHeight the height of an agent
+     */
      private void paintPopulation(Graphics2D g2d, Collection<BaseInformation> population,
                                   double agentWidth, double agentHeight) {
         
@@ -364,7 +479,18 @@ public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
         }
      }
     
-    private void paintAgent(Graphics2D g2d, BaseInformation agentInformation, Color agentColor,
+     
+     /**
+      * 
+      * Paints an agent.
+      * @param g2d the Graphics2D object used to paint the component
+      * @param agentInformation the information of the agent
+      * @param agentColor the color of the agent
+      * @param text the text to place on the agent
+      * @param agentWidth the width of the agent
+      * @param agentHeight the height of the agent
+      */
+     private void paintAgent(Graphics2D g2d, BaseInformation agentInformation, Color agentColor,
                             String text, double agentWidth, double agentHeight) {
         
         double x, y, textX, textY;
@@ -379,6 +505,7 @@ public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
         y          = position.getY() - agentHeight / 2;
         ellipse    = new Ellipse2D.Double(x, y, agentWidth, agentHeight);
         
+        //Draw the Ellipse representing the agent
         g2d.setColor(agentColor);
         g2d.fill(ellipse);
         g2d.setStroke(new BasicStroke((float)(AGENT_CONTOUR_WIDTH / g2d.getTransform().getScaleX())));
@@ -386,17 +513,27 @@ public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
         g2d.draw(ellipse);
         
         if(!text.equals("")) {
+            //Write the text on the agent
             fm    = g2d.getFontMetrics();
             textX = x + agentWidth / 2 - fm.stringWidth(text) / 2;
             textY = y + (agentHeight - fm.getHeight()) / 2 + fm.getAscent();
             g2d.drawString(text, (float)textX, (float)textY);
         }
         if(lifeStatus == AgentLifeStatus.Dead){
+            //Paint a cross to indicate that the agent is dead
             this.paintCross(g2d, x, y, agentWidth, agentHeight);
         }
     }
     
-    private void paintCross(Graphics2D g2d, double x, double y, double width, double height) {
+     /**
+      * Paints a cross in a rectangle.
+      * @param g2d the Graphics2D object used to paint the component
+      * @param x the leftmost X component of the rectangle
+      * @param y the uppermost Y component of the rectangle
+      * @param width the width of the rectangle
+      * @param height the height of the rectangle
+      */
+     private void paintCross(Graphics2D g2d, double x, double y, double width, double height) {
         double x0, y0, x1, y1;
         Line2D.Double line;
         
@@ -420,14 +557,31 @@ public class ZombieEpidemicEnvironmentRepresentation extends JPanel{
         g2d.draw(line);
     }
 
+     /**
+      * Paints a the walls of the environment
+      * @param g2d the Graphics2D object used to paint the component
+      * @param walls the list of walls of the environment
+      */
     private void paintWalls(Graphics2D g2d, Collection<EnvironmentWall> walls) {
         paintLines(g2d, walls, WALL_WIDTH, WALL_COLOR);
     }
 
+    /**
+     * Paint the trajectories of the shots.
+     * @param g2d the Graphics2D object used to paint the component
+     * @param shots the list of shots 
+     */
     private void paintHumanShots(Graphics2D g2d, Collection<Line2D> shots) {
         paintLines(g2d, shots, SHOT_LINE_WIDTH, SHOT_LINE_COLOR);
     }
     
+    /**
+     * Paint a list of lines.
+     * @param g2d the Graphics2D object used to paint the component
+     * @param lines the list of lines
+     * @param strokeWidth the width of the line stroke
+     * @param linesColor the color of the lines 
+     */
     private void paintLines(Graphics2D g2d, Collection<? extends Line2D> lines,
                             float strokeWidth, Color linesColor) {
         

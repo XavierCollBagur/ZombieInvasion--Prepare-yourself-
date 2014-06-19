@@ -25,7 +25,8 @@ import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 
 /**
- *
+ * Frame of the application. It contains a tabbed pane which has the main menu tab
+ * by default.
  * @author Xavier
  */
 public class MainWindow  extends JFrame {
@@ -35,18 +36,23 @@ public class MainWindow  extends JFrame {
     //Public Constructors
     public MainWindow() {
         super("Zombie Invasion: Prepare yourself!");
+        
         initComponents();
+        
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(700, 600);
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setLocationRelativeTo(null);
+        
         try {
             this.setIconImage(ImagesDirectory.APPLICATION_ICON_IMAGE);
-        } catch (Exception ex) {
-        }
+        } catch (Exception ex) {}
     }
     
     //Private Methods
+    /**
+     * Adds a tabbed pane with the application's main menu to the window.
+     */
     private void initComponents() {
         Container windowContainer;
         MainMenu mainMenu;

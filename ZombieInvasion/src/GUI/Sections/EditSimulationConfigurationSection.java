@@ -43,7 +43,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBException;
 
 /**
- *
+ * This class represents the simulation configuration section of the application.
  * @author Xavier
  */
 public class EditSimulationConfigurationSection extends JPanel {
@@ -51,11 +51,35 @@ public class EditSimulationConfigurationSection extends JPanel {
     private final static String DEFAULT_SIMULATION_NAME = "Nova simulació",
                                 DEFAULT_RUN_SIMULATION_NAME = "Execució simulació";
     //Attributes
+    /**
+     * The configuration object.
+     */
     private SimulationConfiguration configuration;
+    
+    /**
+     * The name of the simulation.
+     */
     private String simulationName;
+    
+    /**
+     * The label of the name's simulation.
+     */
     private JLabel simulationNameLabel;
+    
+    /**
+     * The configuration panel of the configuration object.
+     */
     private ConfigurationPane configurationPane;
-    private JButton runSimulationButton, saveSimulationButton;
+    
+    /**
+     * The button to run the simulation.
+     */
+    private JButton runSimulationButton;
+    
+    /**
+     * The button to save the simulation in a file.
+     */
+    private JButton saveSimulationButton;
     
     //Public Constructors
     public EditSimulationConfigurationSection(SimulationConfiguration configuration, String simulationName) {
@@ -72,6 +96,11 @@ public class EditSimulationConfigurationSection extends JPanel {
     }
     
     //Private Methods
+    
+    /**
+     * Creates the section title, the configuration panel and the buttons row 
+     * and adds them in the section.
+     */
     private void initComponents() {
          JComponent northComponent, centralComponent, southComponent;
          
@@ -85,6 +114,10 @@ public class EditSimulationConfigurationSection extends JPanel {
          this.add(southComponent, BorderLayout.SOUTH);
     }
     
+    /**
+     * Creates the north component of the section: a lable with the title.
+     * @return the component
+     */
     private JComponent createNorthComponent(){
         Font labelFont;
         
@@ -96,6 +129,10 @@ public class EditSimulationConfigurationSection extends JPanel {
         return this.simulationNameLabel;
     }
     
+    /**
+     * Creates a label with the title of the simulation.
+     * @return the label
+     */
     private String createSimulationNameLabelText() {
         String labelName;
         
@@ -109,6 +146,10 @@ public class EditSimulationConfigurationSection extends JPanel {
         return labelName;
     }
 
+    /**
+     * Creates the central component of the section: the configuration panel
+     * @return the central component
+     */
     private JComponent createCentralComponent() {
         this.configurationPane = new ConfigurationPane(this.configuration);
 
@@ -118,6 +159,10 @@ public class EditSimulationConfigurationSection extends JPanel {
         return this.configurationPane;
     }
     
+    /**
+     * Creates the south component of the section: the row with the section's buttons
+     * @return the south component
+     */
     private JComponent createSouthComponent() {
         JPanel component;
         
@@ -135,6 +180,11 @@ public class EditSimulationConfigurationSection extends JPanel {
         return component;
     }
     
+    /**
+     * Create a button of the section.
+     * @param text the text of the button
+     * @return the button
+     */
     private JButton createComponentButton(String text) {
         JButton button;
         
@@ -146,6 +196,10 @@ public class EditSimulationConfigurationSection extends JPanel {
         return button;
     }
     
+    /**
+     * Creates the listener of the button for running the simulation.
+     * @return the listener
+     */
     private ActionListener createRunSimulationActionListener() {
         return new ActionListener() {
             @Override
@@ -155,10 +209,13 @@ public class EditSimulationConfigurationSection extends JPanel {
                 JTabbedPane tabs;
                 String tabName;
                 
+                //Get the tabbed pane and create a simulation section with a copy of the 
+                //configuration parameters
                 tabs                   = getTabs();
                 simulationSection      = new SimulationSection(new SimulationConfiguration(configuration));
                 tabComponent           = new ButtonTabComponent(tabs);
 
+                //Get the name of the tab
                 if(simulationName.equals(DEFAULT_SIMULATION_NAME)) {
                     tabName = DEFAULT_RUN_SIMULATION_NAME;
                 }
@@ -166,6 +223,9 @@ public class EditSimulationConfigurationSection extends JPanel {
                     tabName = "Execució \"" + simulationName + "\"";
                 }
                 
+                //Create the tab with the simulation section and places it in the 
+                //tabbed pane. Add a listener when the tab is closed to stop the
+                //execution of the simulation
                 tabs.add(tabName, simulationSection);
                 tabs.setTabComponentAt(tabs.getTabCount() - 1, tabComponent);
                 tabs.setSelectedIndex(tabs.getTabCount() - 1);
@@ -179,6 +239,10 @@ public class EditSimulationConfigurationSection extends JPanel {
         };
     }
     
+    /**
+     * Creates the listener of the button for saving the simulation configuration in a file.
+     * @return the listener
+     */
     private ActionListener createSaveSimulationActionListener() {
         return new ActionListener() {
             @Override
@@ -189,6 +253,7 @@ public class EditSimulationConfigurationSection extends JPanel {
                 SimulationConfigurationFileAdapter fileAdapter;
                 File selectedFile;
                 
+                //Create a file chooser for saving a file and shows it
                 fileChooser = new JFileChooser();
                 
                 fileChooser.setAcceptAllFileFilterUsed(false);
@@ -197,18 +262,22 @@ public class EditSimulationConfigurationSection extends JPanel {
                 fileChooserValue = fileChooser.showSaveDialog(EditSimulationConfigurationSection.this);
                 if(fileChooserValue == JFileChooser.APPROVE_OPTION) {
                     try {
+                        //Get the name of the selected file
                         selectedFile = fileChooser.getSelectedFile();
                         fileName     = selectedFile.getName();
                         filePath     = selectedFile.getAbsolutePath();
                         fileAdapter  = new SimulationConfigurationFileAdapter();
                         
+                        //Force the file to has XML extension
                         if(!hasXMLExtension(filePath)) {
                             filePath += ".xml";
                             fileName += ".xml";
                         }
                         
+                        //Writes the simulation configuration in the file
                         fileAdapter.write(configuration, filePath);
                     
+                        //Update the name of the simulation with the name of the file
                         simulationName = fileName;
                         
                         simulationNameLabel.setText(createSimulationNameLabelText());
@@ -225,11 +294,19 @@ public class EditSimulationConfigurationSection extends JPanel {
         };
     }
     
+    /**
+     * Returns the tabbed pane of the application
+     * @return the tabbed pane
+     */
     private JTabbedPane getTabs() {
         return (JTabbedPane)this.getParent();
     }
     
     //Private Static Methods
+    /**
+     * Creates a configuration object from the default configuration file
+     * @return the SimulationConfiguration object
+     */
     private static SimulationConfiguration getDefaultConfiguration() {
         SimulationConfigurationFileAdapter fa;
         SimulationConfiguration configuration;

@@ -18,12 +18,30 @@
 package GUI.Components.Specific.EnvironmentRepresentation;
 
 /**
- *
+ * This class contains necessary values to paint an environment representation.
  * @author Xavier
  */
 class EnvironmentMeasures {
     //Attributes
-    private double x0, y0, horizontalGrowthFactor, verticalGrowthFactor;
+    /**
+     * The representation's X component of the top-left point
+     */
+    private double x0;
+    
+    /**
+     * The representation's Y component of the top-left point
+     */
+    private double y0;
+    
+    /**
+     * The representation's horizontal scale factor
+     */
+    private double horizontalGrowthFactor;
+    
+    /**
+     * The representation's vertical scale factor
+     */
+    private double verticalGrowthFactor;
     
     //Public Constructors
     public EnvironmentMeasures(double x0, double y0, double horizontalGrowthFactor, double verticalGrowthFactor) {
@@ -34,35 +52,35 @@ class EnvironmentMeasures {
     }
     
     //Public Methods
+    /**
+     * Returns the representation's X component of the top-left point
+     * @return the X component
+     */
     public double getX0() {
         return x0;
     }
 
+    /**
+     * Returns the representation's Y component of the top-left point
+     * @return the Y component
+     */
     public double getY0() {
         return y0;
     }
 
+    /**
+     * Returns the representation's horizontal scale factor.
+     * @return the scale factor
+     */
     public double getHorizontalGrowthFactor() {
         return horizontalGrowthFactor;
     }
-
+    
+    /**
+     * Returns the representation's vertical scale factor.
+     * @return the scale factor
+     */
     public double getVerticalGrowthFactor() {
         return verticalGrowthFactor;
-    }
-
-    public void setX0(double x0) {
-        this.x0 = x0;
-    }
-
-    public void setY0(double y0) {
-        this.y0 = y0;
-    }
-
-    public void setHorizontalGrowthFactor(double horizontalGrowthFactor) {
-        this.horizontalGrowthFactor = horizontalGrowthFactor;
-    }
-
-    public void setVerticalGrowthFactor(double verticalGrowthFactor) {
-        this.verticalGrowthFactor = verticalGrowthFactor;
     }
 }

@@ -160,11 +160,12 @@ public class Vector2D {
      * @param reflectionVector the other vector
      */
     public void reflect(Vector2D reflectionVector) {
-        double dotProduct;
+        double dotProduct, reflVectorMagn;
         
-        dotProduct      = this.getDotProduct(reflectionVector);
-        this.directionX = - 2 * dotProduct * reflectionVector.directionX;
-        this.directionY = - 2 * dotProduct * reflectionVector.directionY; 
+        dotProduct       = this.getDotProduct(reflectionVector);
+        reflVectorMagn   = reflectionVector.getMagnitude();
+        this.directionX -=  2 * dotProduct * reflectionVector.directionX / reflVectorMagn;
+        this.directionY -=  2 * dotProduct * reflectionVector.directionY / reflVectorMagn; 
     }
 }
     

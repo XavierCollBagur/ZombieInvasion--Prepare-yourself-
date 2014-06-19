@@ -42,14 +42,36 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBException;
 
 /**
- *
+ * This class represents the main menu of the application.
  * @author Xavier
  */
 public class MainMenu extends JPanel {
     //Attributes
+    /**
+     * The title of the label.
+     */
     private JLabel title;
-    private JButton newSimulationButton, newSimulationFromExistingButton, 
-                    openSimulationButton, quitButton;
+    
+    /**
+     * The button for configure a new simulation.
+     */
+    private JButton newSimulationButton;
+    
+    /**
+     * The button for configure a simulation whose values initially are retrieved
+     * from a file.
+     */
+    private JButton newSimulationFromExistingButton;
+    
+    /**
+     * The button for execute a simulation whose configuration is retrieved from a file.
+     */
+    private JButton openSimulationButton; 
+            
+    /**
+     * The button for stopping the application.
+     */
+    private JButton quitButton;
     
     //Public Constructors
     public MainMenu() {
@@ -62,6 +84,9 @@ public class MainMenu extends JPanel {
     }
     
     //Private Methods
+    /**
+     * Creates and places all the children components.
+     */
     private void initComponents() {
         //Initialize components
         this.title                           = this.createTitleLabel();
@@ -91,6 +116,10 @@ public class MainMenu extends JPanel {
         this.add(this.quitButton, this.createConstraints(4, 1));
     }
     
+    /**
+     * Creates the label of the title.
+     * @return the label
+     */
     private JLabel createTitleLabel() {
         JLabel label;
         
@@ -101,6 +130,10 @@ public class MainMenu extends JPanel {
         return label;
     }
     
+    /**
+     * Changes values of the properties of a button of this section.
+     * @param button the button
+     */
     private void setMenuButtonProperties(JButton button) {
         button.setPreferredSize(new Dimension(257, 57));
         button.setMinimumSize((Dimension)button.getPreferredSize().clone());
@@ -108,6 +141,9 @@ public class MainMenu extends JPanel {
         button.setFont(button.getFont().deriveFont(18f));
     }
     
+    /**
+     * Creates a GridBagConstraints object.
+     */
     private GridBagConstraints createConstraints(int gridY, int weightY) {
         GridBagConstraints constraints;
         constraints         = new GridBagConstraints();
@@ -119,14 +155,21 @@ public class MainMenu extends JPanel {
         return constraints;
     }
     
+    /**
+     * Creates the action listener of the button for open a simulation configuration section.
+     * @return the action listener
+     */
     private ActionListener createNewSimulationActionListener() {
         return new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JTabbedPane tabs;
                 
+                //Obtain the application's tabbed pane
                 tabs = (JTabbedPane)MainMenu.this.getParent();
                 
+                //Create a new tab with a new simulation configuration section and put it
+                //in the tabbed pane
                 tabs.add("Configuració nova simulació", new EditSimulationConfigurationSection());
                 tabs.setTabComponentAt(tabs.getTabCount() - 1, new ButtonTabComponent(tabs));
                 tabs.setSelectedIndex(tabs.getTabCount() - 1);
@@ -134,6 +177,11 @@ public class MainMenu extends JPanel {
         };
     }
     
+    /**
+     * Creates the action listener of the button for open a simulation configuration section
+     * with the initial vaules retrieved from a file.
+     * @return the action listener
+     */
     private ActionListener createNewSimulationFromExistingActionListener() {
         return new ActionListener() {
             @Override
@@ -144,11 +192,13 @@ public class MainMenu extends JPanel {
                 File selectedFile;
                 String fileName;
                 
+                //Get the file to open
                 selectedFile = getFile();
                
                 if(selectedFile != null) {
+                    //Get the configuration from the file and create a new tab with
+                    //a new simulation configuration section
                     try {  
-
                         fileAdapter = new SimulationConfigurationFileAdapter();    
                         config      = fileAdapter.read(new File(selectedFile.getAbsolutePath()));
                         tabs        = (JTabbedPane)MainMenu.this.getParent();
@@ -169,6 +219,11 @@ public class MainMenu extends JPanel {
         };
     }
     
+    /**
+     * Creates the action listener of the button for executing a simulation whose
+     * parameters are retrieved from a file.
+     * @return the action listener
+     */
     private ActionListener createOpenSimulationActionListener() {
         return new ActionListener() {
             @Override
@@ -178,20 +233,34 @@ public class MainMenu extends JPanel {
                 JTabbedPane tabs;
                 File selectedFile;
                 String fileName;
+                ButtonTabComponent tabComponent;
+                final SimulationSection simulationSection;
                 
+                //Get the file to open
                 selectedFile = getFile();
                 
                 if(selectedFile != null) {
+                    //Get the configuration from the file and create a new tab with
+                    //a new simulation execution section. Add a listener when the tab 
+                    //is closed to stop the execution of the simulation
                     try {  
 
-                        fileAdapter = new SimulationConfigurationFileAdapter();    
-                        config      = fileAdapter.read(new File(selectedFile.getAbsolutePath()));
-                        tabs        = (JTabbedPane)MainMenu.this.getParent();
-                        fileName    = selectedFile.getName();
+                        fileAdapter       = new SimulationConfigurationFileAdapter();    
+                        config            = fileAdapter.read(new File(selectedFile.getAbsolutePath()));
+                        tabs              = (JTabbedPane)MainMenu.this.getParent();
+                        fileName          = selectedFile.getName();
+                        simulationSection = new SimulationSection(new SimulationConfiguration(config));
+                        tabComponent      = new ButtonTabComponent(tabs);
 
-                        tabs.add("Execució \"" + fileName + "\"", new SimulationSection(config));
-                        tabs.setTabComponentAt(tabs.getTabCount() - 1, new ButtonTabComponent(tabs));
+                        tabs.add("Execució \"" + fileName + "\"", simulationSection);
+                        tabs.setTabComponentAt(tabs.getTabCount() - 1, tabComponent);
                         tabs.setSelectedIndex(tabs.getTabCount() - 1);
+                        tabComponent.addActionListenerOnCloseTabButton(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                simulationSection.stop();
+                            }
+                        });
                     } 
                     catch (XMLFileError ex) {
                         JOptionPane.showMessageDialog(MainMenu.this, "El fitxer XML no té el format correcte.", "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -204,6 +273,10 @@ public class MainMenu extends JPanel {
         };
     }
     
+    /**
+     * Opens a file chooser for opening XML files.
+     * @return the file selected
+     */
     private File getFile() {
         int fileChooserValue;
         JFileChooser fileChooser;
@@ -224,6 +297,10 @@ public class MainMenu extends JPanel {
         return selectedFile;
     }
     
+    /**
+     * Creates the action litener of the button for stopping the simulation.
+     * @return the action listener
+     */
     private ActionListener createExitActionListener() {
         return new ActionListener() {
             @Override

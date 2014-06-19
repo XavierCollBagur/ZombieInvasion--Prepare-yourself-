@@ -47,7 +47,7 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
 /**
- *
+ * This class represents the simulation execution section of the application.
  * @author Xavier
  */
 public class SimulationSection extends JPanel {
@@ -56,10 +56,27 @@ public class SimulationSection extends JPanel {
                                NOT_AVAILABLE_RESOURCES_COLOR = Color.RED;
     
     //Attributes
+    /**
+     * The configuration object with the values used in the execution.
+     */
     private final SimulationConfiguration configuration;
+    
+    /**
+     * Boolean value indicating if the wall construction mode is active.
+     */
     private boolean inWallConstructionMode;
+    
+    /**
+     * Last point of the simulation's environment that the user clicked with the 
+     * wall construction mode active.
+     */
     private Point2D lastEnvironmentPoint;
+    
+    /**
+     * The component of the simulation.
+     */
     private InteractiveZombieEpidemicEnvironmentRepresentation environmentRepresentation;
+    
     private JLabel reproductionLabel, restartLabel, buyVaccinesLabel, buyWeaponsLabel, wallModeLabel, 
                    totalResourcesAvailableLabel;
     private JButton reproductionButton, restartButton, 
@@ -76,11 +93,18 @@ public class SimulationSection extends JPanel {
         initComponents(config);
     }
 
+    /**
+     * Stops the current execution of the simulation.
+     */
     public void stop() {
         this.environmentRepresentation.stopEnvironment();
     }
     
     //Private Methods
+    /**
+     * Creates and adds into the container the simulation component and the options panel.
+     * @param config the configuration object
+     */
     private void initComponents(SimulationConfiguration config) {
         JPanel optionsPanel;
         
@@ -92,6 +116,12 @@ public class SimulationSection extends JPanel {
         this.add(optionsPanel, BorderLayout.WEST);
         this.add(this.environmentRepresentation, BorderLayout.CENTER);
     }
+    
+    /**
+     * Creates the panel with the options buttons.
+     * @param configuration the configuraiton object
+     * @return the panel
+     */
     private JPanel createOptionsPanel(ResourcesConfiguration configuration) {
         final int vaccinatedPerVaccinationKit, armedPerWeaponKit, vaccinationKitCost, 
                   weaponKitCost, wallUnitCost, totalResourcesAvailable;
@@ -100,6 +130,7 @@ public class SimulationSection extends JPanel {
         GridBagConstraints constraints;
         JSeparator verticalSeparator, horizontalSeparator;
          
+        //Create the components
         totalResourcesAvailable           = configuration.getTotalResourcesAvailable();
         vaccinatedPerVaccinationKit       = configuration.getVaccination().getVaccinatedPerVaccinationKit();
         armedPerWeaponKit                 = configuration.getWeapon().getArmedPerWeaponKit();
@@ -124,12 +155,14 @@ public class SimulationSection extends JPanel {
         verticalSeparator                 = new JSeparator(SwingConstants.VERTICAL);
         horizontalSeparator               = new JSeparator(SwingConstants.HORIZONTAL);
         
+        //Add listeners to the components
         this.reproductionButton.addActionListener(this.createPlayPauseEnvironmentActionListener());
         this.restartButton.addActionListener(this.createRestartEnvironmentActionListener());
         this.buyVaccinesButton.addActionListener(this.createBuyVaccinationKitActionListener());
         this.buyWeaponsButton.addActionListener(this.createBuyWeaponKitActionListener());
         this.wallModeButton.addActionListener(this.createWallModeActionListener());
         
+        //Add the components into the container
         optionsPanel.add(this.reproductionButton, this.createOptionButtonConstraints(0, 0));
         optionsPanel.add(this.reproductionLabel, this.createOptionLabelConstraints(0, 1));
         
@@ -178,6 +211,11 @@ public class SimulationSection extends JPanel {
         return optionsPanel;
     }
     
+    /**
+     * Creates the label of the number of resources available.
+     * @param totalResourcesAvailable the number of resources avalable
+     * @return the label
+     */
     private JLabel createTotalResourcesAvailableLabel(int totalResourcesAvailable) {
         JLabel label;
         Dimension textSize;
@@ -199,6 +237,12 @@ public class SimulationSection extends JPanel {
         return label;
     }
     
+    /**
+     * Creates a button of the options panel.
+     * @param buttonText the text of the action of the button
+     * @param buttonImage the image to display in the button
+     * @return the button
+     */
     private JButton createOptionButton(String buttonText, Image buttonImage) {
         JButton optionButton;
   
@@ -212,6 +256,11 @@ public class SimulationSection extends JPanel {
         return optionButton;
     }
     
+    /**
+     * Creates a label describing the action of a option button.
+     * @param labelText the text of the label
+     * @return the label
+     */
     private JLabel createOptionLabel(String labelText) {
         JLabel optionLabel;
         
@@ -226,6 +275,12 @@ public class SimulationSection extends JPanel {
         return optionLabel;
     }
     
+    /**
+     * Create a GridBagConstraints object for placing a option button.
+     * @param gridX the column of the button
+     * @param gridY the row of the button
+     * @return the GridBagConstraints object
+     */
     private GridBagConstraints createOptionButtonConstraints(int gridX, int gridY) {
         GridBagConstraints constraints;
         
@@ -235,6 +290,12 @@ public class SimulationSection extends JPanel {
         return constraints;
     }
     
+    /**
+     * Create a GridBagConstraints object for placing a option label.
+     * @param gridX the column of the label
+     * @param gridY the row of the label
+     * @return the GridBagConstraints object
+     */
     private GridBagConstraints createOptionLabelConstraints(int gridX, int gridY) {
         GridBagConstraints constraints;
         
@@ -244,6 +305,12 @@ public class SimulationSection extends JPanel {
         return constraints;
     }
     
+    /**
+     * General function to create a GridBagConstraints object for placing a option element.
+     * @param gridX the column of the element
+     * @param gridY the row of the element
+     * @return the GridBagConstraints object
+     */
     private GridBagConstraints createOptionElementConstraints(int gridX, int gridY) {
         GridBagConstraints constraints;
         
@@ -256,27 +323,26 @@ public class SimulationSection extends JPanel {
         return constraints;
     }
     
+    /**
+     * Creates the listener of the reproduction button.
+     * @return the listener
+     */
     private ActionListener createPlayPauseEnvironmentActionListener() {
         return new ActionListener() {
             boolean isRunning = false;
             
             @Override
             public void actionPerformed(ActionEvent e) {
-                JButton reproductionButton;
-                JLabel reproductionLabel;
-                InteractiveZombieEpidemicEnvironmentRepresentation environmentRepresentation;
-                
-                reproductionButton        = SimulationSection.this.reproductionButton;
-                reproductionLabel         = SimulationSection.this.reproductionLabel;
-                environmentRepresentation = SimulationSection.this.environmentRepresentation;
-                this.isRunning            = !this.isRunning;
+                this.isRunning = !this.isRunning;
                 
                 if(this.isRunning) {
+                    //Starts the execution
                     reproductionButton.setIcon(new ImageIcon(ImagesDirectory.PAUSE_IMAGE));
                     reproductionLabel.setText("Pausa");
                     environmentRepresentation.runEnvironment();
                 }
                 else {
+                    //Stops the execution
                     reproductionButton.setIcon(new ImageIcon(ImagesDirectory.PLAY_IMAGE));
                     reproductionLabel.setText("Reprodueix");
                     environmentRepresentation.stopEnvironment();
@@ -286,6 +352,10 @@ public class SimulationSection extends JPanel {
         };
     }
     
+    /**
+     * Creates the listener of the restart button
+     * @return the listener
+     */
     private ActionListener createRestartEnvironmentActionListener() {
         return new ActionListener() {
             @Override
@@ -295,15 +365,19 @@ public class SimulationSection extends JPanel {
                 thisPanel = SimulationSection.this;
                 
                 if(thisPanel.environmentRepresentation.isRunning()) {
+                    //Before restarting the simulation, it has to be stopped
                     thisPanel.reproductionButton.doClick();
                 }
                 
+                //Remove the simulation component
                 thisPanel.remove(thisPanel.environmentRepresentation);
                 
+                //Create a new simulation component and add into the container
                 thisPanel.environmentRepresentation = thisPanel.createEnvironmentRepresentation(thisPanel.configuration);
                 
                 thisPanel.add(thisPanel.environmentRepresentation, BorderLayout.CENTER);
                 
+                //Update the option panel state
                 thisPanel.updateResourcesInformation();
                 
                 if(thisPanel.inWallConstructionMode) {
@@ -315,36 +389,52 @@ public class SimulationSection extends JPanel {
         };
     }
     
+    /**
+     * Creates the listener of the button for buy and use vaccines.
+     * @return the listener
+     */
     private ActionListener createBuyVaccinationKitActionListener() {
         return new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 boolean bought;
                 
+                //Buy and use a vaccination kit
                 bought = SimulationSection.this.environmentRepresentation.buyAndUseVaccinationKit();
                 
                 if(bought) {
+                    //Update the options panel
                     SimulationSection.this.updateResourcesInformation();
                 }
             }
         };
     }
     
+    /**
+     * Creates the listener of the button for buy and use weapons.
+     * @return the listener
+     */
     private ActionListener createBuyWeaponKitActionListener() {
         return new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 boolean bought;
                 
+                //Buy and use a weaponkit
                 bought = SimulationSection.this.environmentRepresentation.buyAndUseWeaponKit();
                 
                 if(bought) {
+                    //Update the options panel
                     SimulationSection.this.updateResourcesInformation();
                 }
             }
         };
     }
     
+    /**
+     * Create the listener of the button for activating and deactivating the construction mode.
+     * @return the listener
+     */
     private ActionListener createWallModeActionListener() {
         return new ActionListener() {
             @Override
@@ -357,15 +447,18 @@ public class SimulationSection extends JPanel {
                 wallUnitCost           = configuration.getResources().getWall().getWallUnitCost();
                 
                 if(inWallConstructionMode) {
+                    //Enter the wall construction mode
                     lastEnvironmentPoint = null;
                     buttonImage          = ImagesDirectory.WALL_FORBIDDEN_IMAGE;
                     labelText            = "Sortir mode construcció (-" + wallUnitCost +  "€/metre)";
                 }
                 else {
+                    //Exit the wall construction mode
                     buttonImage = ImagesDirectory.WALL_IMAGE;
                     labelText   = "Entrar mode construcció (-" + wallUnitCost +  "€/metre)";
                 }
                 
+                //Update the construction mode button and text according the actived mode
                 wallModeButton.setIcon(new ImageIcon(buttonImage));
                 wallModeButton.setToolTipText(labelText);
                 wallModeLabel.setText("<html><center>" + labelText + "</center></html>");
@@ -373,6 +466,9 @@ public class SimulationSection extends JPanel {
         };
     }
     
+    /**
+     * Update the resources options.
+     */
     private void updateResourcesInformation() {
         final int vaccinationKitCost, weaponKitCost, wallUnitCost, resourcesAvailable;
         boolean canBuyVaccinationKit, canBuyWeaponKit, canBuyWallUnit;
@@ -387,13 +483,17 @@ public class SimulationSection extends JPanel {
         canBuyWeaponKit      = resourcesAvailable >= weaponKitCost;
         canBuyWallUnit       = resourcesAvailable >= wallUnitCost;
         
+        //Update the total resources available and disable buttons of resources that can't be bought
         this.totalResourcesAvailableLabel.setText(resourcesAvailable + "€");
         this.buyVaccinesButton.setEnabled(canBuyVaccinationKit);
         this.buyWeaponsButton.setEnabled(canBuyWeaponKit);
         this.wallModeButton.setEnabled(canBuyWallUnit);
         
         if(!canBuyVaccinationKit && !canBuyWeaponKit && !canBuyWallUnit) {
+            //The user can't buy any resource
+            
             if(this.inWallConstructionMode) {
+                //Exit the wall construction mode
                 this.wallModeButton.doClick();
             }
             
@@ -404,6 +504,11 @@ public class SimulationSection extends JPanel {
         }
     }
     
+    /**
+     * Creates a simulation component
+     * @param config the configuration object of the simulation
+     * @return the component
+     */
     private InteractiveZombieEpidemicEnvironmentRepresentation createEnvironmentRepresentation(SimulationConfiguration config) {
         InteractiveZombieEpidemicEnvironmentRepresentation environment;
         
@@ -415,6 +520,7 @@ public class SimulationSection extends JPanel {
         environment.addRunEnvironmentEventsHandler(new RunEnvironmentEventsHandler() {
             @Override
             public void whenFinalStateAchieved() {
+                //Change the reproduction button to pause state
                 SimulationSection.this.reproductionButton.setIcon(new ImageIcon(ImagesDirectory.PLAY_IMAGE));
                 SimulationSection.this.reproductionLabel.setText("Reprodueix");
             }
@@ -423,23 +529,27 @@ public class SimulationSection extends JPanel {
         return environment;
     }
     
+    /**
+     * Create the mouse listener for clicks in the environment component 
+     * @return the listener
+     */
     private MouseListener createClickEnvironmentMouseListener() {
         return new MouseAdapter() {
             
             @Override
             public void mouseReleased(MouseEvent e) {
-                InteractiveZombieEpidemicEnvironmentRepresentation environmentRepresentation;
                 Point2D environmentPoint;
                 
                 if(SimulationSection.this.inWallConstructionMode) {
                     switch(e.getButton()) {
-                        case MouseEvent.BUTTON1:
-                            environmentRepresentation = SimulationSection.this.environmentRepresentation;
-                            environmentPoint          = environmentRepresentation.getEnvironmentPoint(e.getPoint());
+                        case MouseEvent.BUTTON1: //Left button
+                            //Retrieve the point of the environment clicked
+                            environmentPoint = environmentRepresentation.getEnvironmentPoint(e.getPoint());
 
                             if(environmentPoint != null) {
                                 
                                 if(lastEnvironmentPoint != null) {
+                                    //Build a wall between the last point and the new point
                                     environmentRepresentation.buyAndBuildWall(lastEnvironmentPoint, environmentPoint, true);
                                 }
 
@@ -449,6 +559,7 @@ public class SimulationSection extends JPanel {
                             }
                             break;
                         case MouseEvent.BUTTON3:
+                            //Remove the last environment point
                             lastEnvironmentPoint = null;
                     }
                 }

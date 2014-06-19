@@ -1,0 +1,15 @@
+Agents.Base
+Agents.Human
+Agents.Zombie
+Environment
+GUI
+GUI.Components.General
+GUI.Components.Specific
+GUI.Components.Specific.EnvironmentRepresentation
+GUI.Sections
+Geometry
+Main
+Media.Images
+SimulationConfiguration
+SimulationConfigurationFileAdapter
+StandardAgentFramework

@@ -31,12 +31,30 @@ import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicSliderUI;
 
 /**
- *
+ * This class represents a slider's UI for thick sliders with two-colored bar.
  * @author Xavier
  */
 public class ThickSliderUI extends BasicSliderUI {
     //Attributes
-    private Color thumbColor, leftColor, rightColor, linesColor;
+    /**
+     * The color of the circular thumb.
+     */
+    private Color thumbColor;
+    
+    /**
+     * The left (or top in vertical orientation) color of the bar.
+     */
+    private Color leftColor;
+    
+    /**
+     * The right (or bottom in vertical orientation) color of the bar.
+     */
+    private Color rightColor;
+    
+    /**
+     * The color of the lines.
+     */
+    private Color linesColor;
     
     //Public Constructors
     public ThickSliderUI(JSlider b, Color thumbColor, Color leftColor, 
@@ -183,34 +201,66 @@ public class ThickSliderUI extends BasicSliderUI {
     }
     
     //Public Methods
+    /**
+     * Get the color of the thumb.
+     * @return the color
+     */
     public Color getThumbColor() {
         return thumbColor;
     }
 
+    /**
+     * Get the color of the left (or top in vertical orientation) part of the bar.
+     * @return the color
+     */
     public Color getLeftColor() {
         return leftColor;
     }
 
+    /**
+     * Get the color of the right (or bottom in vertical orientation) part of the bar.
+     * @return the color
+     */    
     public Color getRightColor() {
         return rightColor;
     }
-
+    
+    /**
+     * Get the color of the lines.
+     * @return the color
+     */
     public Color getLinesColor() {
         return linesColor;
     }
 
+    /**
+     * Sets the color of the thumb.
+     * @param thumbColor the color
+     */
     public void setThumbColor(Color thumbColor) {
         this.thumbColor = thumbColor;
     }
 
+    /**
+     * Sets the color of the left (or top in vertical orientation) part of the bar.
+     * @param leftColor the color
+     */
     public void setLeftColor(Color leftColor) {
         this.leftColor = leftColor;
     }
 
+    /**
+     * Sets the color of the right (or top in bottom orientation) part of the bar.
+     * @param rightColor the color
+     */
     public void setRightColor(Color rightColor) {
         this.rightColor = rightColor;
     }
 
+    /**
+     * Sets the color of the lines.
+     * @param linesColor the color
+     */
     public void setLinesColor(Color linesColor) {
         this.linesColor = linesColor;
     }

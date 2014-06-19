@@ -63,7 +63,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- *
+ * This class represents the configuration panel of the application.
  * @author Xavier
  */
 public class ConfigurationPane extends CarouselPanel {
@@ -80,7 +80,7 @@ public class ConfigurationPane extends CarouselPanel {
                              MAX_ROWS                         = Integer.MAX_VALUE,
                              MIN_COLUMNS                      = 1,
                              MAX_COLUMNS                      = Integer.MAX_VALUE,
-                             CELL_HEIGHT                      = 200,
+                             CELL_HEIGHT                      = 20000,//200,
                              MIN_HUMAN_SPEED                  = 1,
                              MAX_HUMAN_SPEED                  = CELL_HEIGHT,
                              MIN_HUMAN_VISION_DISTANCE        = CELL_HEIGHT / 2,
@@ -120,7 +120,11 @@ public class ConfigurationPane extends CarouselPanel {
                              MIN_HEALTHY                      = 0;
     
     //Attributes
+    /**
+     * The configuration object where values will be placed
+     */
     private SimulationConfiguration linkedConfiguration;
+    
     private ZombieEpidemicEnvironmentRepresentation environmentRepresentation;
     
     //Public Constructors
@@ -134,6 +138,10 @@ public class ConfigurationPane extends CarouselPanel {
     }
     
     //Private functions
+    /**
+     * This function ensures that all the configuration parameters have a valid
+     * default value.
+     */
     private void adjustConfigurationInitialValues() {
         int numRows, numColumns, agentWidth, agentHeight, oldCellHeight, cellWidth, cellHeight,
             humanSpeed, humanVisionDistance, infectedLatencyPeriod, zombieSpeed, zombieSpeedAtRest, 
@@ -230,6 +238,9 @@ public class ConfigurationPane extends CarouselPanel {
         wallConfig.setZombiesNeededToBreakDownAWall(zombiesNeededWall);
     }
     
+    /**
+     * Adds the four configuration subpanels.
+     */
     private void initComponents() {
         this.add(this.createEnvironmentPanel());
         this.add(this.createAgentsConfigurationPanel());
@@ -237,6 +248,10 @@ public class ConfigurationPane extends CarouselPanel {
         this.add(this.createResourcesConfigurationPanel());
     }
     
+    /**
+     * Returns the panel used for configuring environment parameters.
+     * @return the panel
+     */
     private JPanel createEnvironmentPanel() {
         JPanel container, scenarioPanel, agentCellProportionPanel;
         
@@ -253,6 +268,11 @@ public class ConfigurationPane extends CarouselPanel {
         return container;
     }
     
+    /**
+     * Returns the panel for configuring the number of rows and columns and the 
+     * inaccessible cells of the environment.
+     * @return the panel
+     */
     private JPanel createScenarioPanel() {
         int initRows, initColumns;
         JPanel panel;
@@ -260,6 +280,7 @@ public class ConfigurationPane extends CarouselPanel {
         final JSpinner rowsSpinner, columnsSpinner; 
         Dimension minimumSize;
         
+        //Create the components
         initRows                  = this.linkedConfiguration.getEnvironment().getNumberOfRows();
         initColumns               = this.linkedConfiguration.getEnvironment().getNumberOfColumns();
         panel                     = this.createTitledPanel("ESCENARI");
@@ -272,6 +293,7 @@ public class ConfigurationPane extends CarouselPanel {
                                                                                 new ZombieEpidemicEnvironmentInformation());
         minimumSize               = columnsLabel.getMinimumSize();
         
+        //Set components' properties
         rowsLabel.setMinimumSize(minimumSize);
         columnsLabel.setMinimumSize(minimumSize);
         rowsSpinner.setMinimumSize(minimumSize);
@@ -281,6 +303,7 @@ public class ConfigurationPane extends CarouselPanel {
         environmentRepresentation.setMantainAspectRatioAnchor(Anchor.Center);
         environmentRepresentation.setOpaque(false);
         
+        //Add the components to the container
         panel.setLayout(new GridBagLayout());
         panel.add(rowsLabel, this.createConstraints(0, 0));
         panel.add(columnsLabel, this.createConstraints(1, 0));
@@ -290,6 +313,7 @@ public class ConfigurationPane extends CarouselPanel {
         panel.add(inaccessibleCellsLabel, this.createConstraints(0, 2, 3, 1));
         panel.add(environmentRepresentation, this.createConstraints(GridBagConstraints.BOTH, 0, 3, 3, 1, 1));
         
+        //Add listeners to components
         rowsSpinner.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -301,9 +325,13 @@ public class ConfigurationPane extends CarouselPanel {
                 oldRows = linkedConfiguration.getEnvironment().getNumberOfRows();
                 newRows = (int)rowsSpinner.getValue();
                 
+                //Update the configuration object
                 linkedConfiguration.getEnvironment().setNumberOfRows(newRows);
                 
                 if(oldRows > newRows) {
+                    //The new number of rows will be lower. Remove inaccessible cells
+                    //of exceeding rows
+                    
                     cell              = new Cell(0, 0);
                     inaccessibleCells = linkedConfiguration.getEnvironment().getInaccessibleCells();
                     
@@ -315,6 +343,7 @@ public class ConfigurationPane extends CarouselPanel {
                     }
                 }
                 
+                //Repaint the environment representation of inaccessible cells
                 environmentRepresentation.repaint();
             }
         });
@@ -330,9 +359,13 @@ public class ConfigurationPane extends CarouselPanel {
                 oldColumns = linkedConfiguration.getEnvironment().getNumberOfColumns();
                 newColumns = (int)columnsSpinner.getValue();
                 
+                //Update the configuration object
                 linkedConfiguration.getEnvironment().setNumberOfColumns(newColumns);
                 
                 if(oldColumns > newColumns) {
+                    //The new number of columns will be lower. Remove inaccessible cells
+                    //of exceeding columns
+                    
                     cell              = new Cell(0, 0);
                     inaccessibleCells = linkedConfiguration.getEnvironment().getInaccessibleCells();
                     
@@ -344,6 +377,7 @@ public class ConfigurationPane extends CarouselPanel {
                     }
                 }
                 
+                //Repaint the environment representation of inaccessible cells
                 environmentRepresentation.repaint();
             }
         });
@@ -355,16 +389,20 @@ public class ConfigurationPane extends CarouselPanel {
                 Set<Cell> inaccessibleCells;
                 boolean alreadyInserted;
                 
+                //Get the clicked cell
                 cell = environmentRepresentation.getEnvironmentCell(e.getPoint());
                 
                 if(cell != null) { 
+                    //Try to add the cell to the inaccessible cells set
                     inaccessibleCells = linkedConfiguration.getEnvironment().getInaccessibleCells();
                     alreadyInserted   = !inaccessibleCells.add(cell);
                     
                     if(alreadyInserted) {
+                        //The clicked cell already contained the cell. The cell must be removed.
                         inaccessibleCells.remove(cell);
                     }
                     
+                    //Repaint the component
                     environmentRepresentation.repaint();
                 }
             }
@@ -373,6 +411,10 @@ public class ConfigurationPane extends CarouselPanel {
         return panel;
     }   
     
+    /**
+     * Returns the panel for configuring cells' and humans' dimensions.
+     * @return the panel
+     */
     private JPanel createAgentCellProportion() {
         final int initialAgentWidth, initialAgentHeight, initialCellWidth, initialCellHeight,
                   agentCellWidthPercentage, agentCellHeightPercentage, cellWidthHeightPercentage;
@@ -381,6 +423,7 @@ public class ConfigurationPane extends CarouselPanel {
         final JSlider cellWidthHeightSlider, agentCellWidthSlider, agentCellHeightSlider;
         final ZombieEpidemicEnvironmentRepresentation agentCellRepresentation;
         
+        //Create the components
         initialAgentWidth         = this.linkedConfiguration.getEnvironment().getAgentWidth();
         initialAgentHeight        = this.linkedConfiguration.getEnvironment().getAgentHeight();
         initialCellWidth          = this.linkedConfiguration.getEnvironment().getCellWidth();
@@ -397,6 +440,7 @@ public class ConfigurationPane extends CarouselPanel {
         agentCellHeightSlider     = this.createPercentageSlider(Math.min(agentCellHeightPercentage, 100));
         agentCellRepresentation   = this.createAgentCellRepresentation();
         
+        //Set components' properties
         panel.setLayout(new GridBagLayout());
         panel.add(cellWidthHeightLabel, this.createConstraints(0, 0));
         panel.add(cellWidthHeightSlider, this.createConstraints(0, 1));
@@ -406,6 +450,7 @@ public class ConfigurationPane extends CarouselPanel {
         panel.add(agentCellHeightSlider, this.createConstraints(0, 5));
         panel.add(agentCellRepresentation, this.createConstraints(GridBagConstraints.BOTH, 0, 6, 6, 1, 1));
         
+        //Add listeners to components
         cellWidthHeightSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -414,6 +459,7 @@ public class ConfigurationPane extends CarouselPanel {
                 int newCellWidth, newAgentWidth;
                 double cellProportion, agentProportion;
                 
+                //Calculate the new agent's and cell's width
                 config          = agentCellRepresentation.getEnvironmentConfiguration();
                 agentInfo       = agentCellRepresentation.getEnvironmentInformation().getAlivePopulation().iterator().next(); 
                 cellProportion  = (double)cellWidthHeightSlider.getValue() / 100;  
@@ -421,6 +467,9 @@ public class ConfigurationPane extends CarouselPanel {
                 agentProportion = (double)agentCellWidthSlider.getValue() / 100;  
                 newAgentWidth   = (int)Math.ceil(agentProportion * newCellWidth);
                 
+                //Update the configuration object, the environment representation
+                //for inaccessible cells and the agent/cell representation with the new
+                //values of agent's and cell's width
                 config.setCellWidth(newCellWidth);
                 config.setAgentWidth(newAgentWidth);
                 linkedConfiguration.getEnvironment().setCellWidth(newCellWidth);
@@ -439,11 +488,14 @@ public class ConfigurationPane extends CarouselPanel {
                 int newAgentWidth;
                 double proportion;
                 
+                //Calculate the new agent's width
                 config        = agentCellRepresentation.getEnvironmentConfiguration();
                 agentInfo     = agentCellRepresentation.getEnvironmentInformation().getAlivePopulation().iterator().next(); 
                 proportion    = (double)agentCellWidthSlider.getValue() / 100;  
                 newAgentWidth = (int)Math.ceil(proportion * config.getCellWidth());
                 
+                //Update the configuration object and the agent/cell representation 
+                //with the new value of agent's width
                 config.setAgentWidth(newAgentWidth);
                 linkedConfiguration.getEnvironment().setAgentWidth(newAgentWidth);
                 agentInfo.setPosition(config.getAgentMinX(), config.getAgentMaxY());
@@ -459,11 +511,14 @@ public class ConfigurationPane extends CarouselPanel {
                 int newAgentHeight;
                 double proportion;
                 
+                //Calculate the new agent's height
                 config         = agentCellRepresentation.getEnvironmentConfiguration();
                 agentInfo      = agentCellRepresentation.getEnvironmentInformation().getAlivePopulation().iterator().next(); 
                 proportion     = (double)agentCellHeightSlider.getValue() / 100;  
                 newAgentHeight = (int)Math.ceil(proportion * config.getCellHeight());
                 
+                //Update the configuration object and the agent/cell representation 
+                //with the new value of agent's height
                 config.setAgentHeight(newAgentHeight);
                 linkedConfiguration.getEnvironment().setAgentHeight(newAgentHeight);
                 agentInfo.setPosition(config.getAgentMinX(), config.getAgentMaxY());
@@ -474,6 +529,11 @@ public class ConfigurationPane extends CarouselPanel {
         return panel;
     }
     
+    /**
+     * Returns a slider with values between 1 and 100 and labels a 1%, 25%, 50% and 100%.
+     * @param value the default value of the slider (it must be between 1 and 100)
+     * @return the slider
+     */
     private JSlider createPercentageSlider(int value) {
         JSlider slider;
         Hashtable<Integer, JLabel> labelTable;
@@ -494,6 +554,11 @@ public class ConfigurationPane extends CarouselPanel {
         return slider;
     }
     
+    /**
+     * Returns the environment representation with of an environment with only
+     * one cell and one agent in order to show agent/cell proportion.
+     * @return the environment representation
+     */
     private ZombieEpidemicEnvironmentRepresentation createAgentCellRepresentation() {
         ZombieEpidemicEnvironmentRepresentation representation;
         EnvironmentConfiguration config;
@@ -517,6 +582,11 @@ public class ConfigurationPane extends CarouselPanel {
         return representation;
     }
     
+    /**
+     * Returns the panel used for configuring initial population and parametres
+     * related to agents interaction.
+     * @return the panel
+     */
     private JPanel createPopulationCountAndInteractionPanel() {
         JPanel container, initialPopulationPanel,zombieHumanInteractionPanel;
         
@@ -531,6 +601,10 @@ public class ConfigurationPane extends CarouselPanel {
         return container;
     }
     
+    /**
+     * Returns the panel used for configuring the initial population of the simulation.
+     * @return the panel
+     */
     private JPanel createInitialPopulationPanel() {
         final int totalPopulation, initiallyHealthy, initiallyHuman;
         JPanel panel;
@@ -538,6 +612,7 @@ public class ConfigurationPane extends CarouselPanel {
         JLabel totalPopulationLabel, humanZombieLabel, healthyInfectedLabel;
         final JSlider humanZombieSlider, healthyInfectedSlider;
         
+        //Create the components
         initiallyHealthy       = this.linkedConfiguration.getPopulation().getInitiallyHealthy();
         initiallyHuman         = this.linkedConfiguration.getPopulation().getInitiallyHuman();
         totalPopulation        = this.linkedConfiguration.getPopulation().getInitialPopulationCount();
@@ -549,6 +624,7 @@ public class ConfigurationPane extends CarouselPanel {
         humanZombieSlider      = createThickSlider(initiallyHuman, MIN_HUMAN, totalPopulation, CUSTOM_GREEN, CUSTOM_RED, "Humans", "Zombis", "");
         healthyInfectedSlider  = createThickSlider(initiallyHealthy, MIN_HEALTHY, humanZombieSlider.getValue(), CUSTOM_GREEN, CUSTOM_YELLOW, "Sans", "Infectats", "");
         
+        //Add the components to the container
         panel.setLayout(new GridBagLayout());
         panel.add(totalPopulationLabel, this.createConstraints(0, 0));
         panel.add(totalPopulationSpinner, this.createConstraints(GridBagConstraints.NONE, 0, 1, 1, 1, 0));
@@ -558,6 +634,7 @@ public class ConfigurationPane extends CarouselPanel {
         panel.add(healthyInfectedSlider, this.createConstraints(0, 5));
         panel.add(new JLabel(), this.createConstraints(GridBagConstraints.NONE, 0, 6, 1, 0, 1));
         
+        //Add listeners to components
         totalPopulationSpinner.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -565,6 +642,7 @@ public class ConfigurationPane extends CarouselPanel {
                 
                 totalPopulation = (int)(totalPopulationSpinner.getValue());
                 
+                //Update the maximum allowed value ot the human/zombie slider
                 changeThickSliderMaximum(humanZombieSlider, totalPopulation);
             }
         });
@@ -577,7 +655,10 @@ public class ConfigurationPane extends CarouselPanel {
                 humanPopulation = humanZombieSlider.getValue();
                 zombifiedPopulation = humanZombieSlider.getMaximum() - humanPopulation;
                 
+                //Change the the maximum value of the healthy/infected slider
                 changeThickSliderMaximum(healthyInfectedSlider, humanPopulation);
+                
+                //Update the configuration object
                 linkedConfiguration.getPopulation().setInitiallyZombified(zombifiedPopulation);
                 
             }
@@ -591,6 +672,7 @@ public class ConfigurationPane extends CarouselPanel {
                 healthyPopulation  = healthyInfectedSlider.getValue();
                 infectedPopulation = healthyInfectedSlider.getMaximum() - healthyPopulation;
                 
+                //Update the configuration object
                 linkedConfiguration.getPopulation().setInitiallyHealthy(healthyPopulation);
                 linkedConfiguration.getPopulation().setInitiallyInfected(infectedPopulation);
             }
@@ -599,155 +681,28 @@ public class ConfigurationPane extends CarouselPanel {
         return panel;
     }
     
+    /**
+     * Changes the maximum value of a thick slider
+     * @param slider the slider
+     * @param newMax the new maximum value
+     */
     private void changeThickSliderMaximum(JSlider slider, int newMax) {
         JLabel maxLabel;
         
+        //Remove the label placed on the maximum position
         maxLabel = (JLabel)slider.getLabelTable().remove(slider.getMaximum());
         
+        //Place the removed label to the new maximum position
         slider.getLabelTable().put(newMax, maxLabel);
+        
+        //Update the maximum value
         slider.setMaximum(newMax);
     }
     
-    private JPanel createHumanConfigurationPanel() {
-        final int speed, visionDistance;
-        JPanel panel;
-        JLabel speedLabel, visionDistanceLabel;
-        final JSlider speedSlider, visionDistanceSlider;
-
-        speed                = this.linkedConfiguration.getHuman().getSpeed();
-        visionDistance       = this.linkedConfiguration.getHuman().getVisionDistance();
-        panel                = this.createTitledPanel("HUMÀ");
-        speedLabel           = this.createLabel("Velocitat", 15);
-        visionDistanceLabel  = this.createLabel("Capacitat de visió", 15);
-        speedSlider          = this.createMinMaxSlider(speed, MIN_HUMAN_SPEED, MAX_HUMAN_SPEED, "Baixa", "Alta");//this.createTopLabelsSlider(speed, MIN_HUMAN_SPEED, MAX_HUMAN_SPEED, new JLabel("Baixa"), new JLabel("Alta"), new JLabel("Humà"));
-        visionDistanceSlider = this.createMinMaxSlider(visionDistance, MIN_HUMAN_VISION_DISTANCE, MAX_HUMAN_VISION_DISTANCE, "Baixa", "Alta");//this.createTopLabelsSlider(visionDistance, MIN_HUMAN_VISION_DISTANCE, MAX_HUMAN_VISION_DISTANCE, new JLabel("Baixa"), new JLabel("Alta"), new JLabel("Humà"));
-        
-        panel.setLayout(new GridBagLayout());
-        panel.add(speedLabel, this.createConstraints(0, 0));
-        panel.add(speedSlider, this.createConstraints(0, 1));
-        panel.add(visionDistanceLabel, this.createConstraints(0, 2));
-        panel.add(visionDistanceSlider, this.createConstraints(0, 3));
-        panel.add(new JLabel(), this.createConstraints(0, 4, 1, 1, 1));
-        
-        speedSlider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                int speed;
-                
-                speed = speedSlider.getValue();
-                
-                linkedConfiguration.getHuman().setSpeed(speed);
-            }
-        });
-        
-        visionDistanceSlider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                int visionDistance;
-                
-                visionDistance = visionDistanceSlider.getValue();
-                
-                linkedConfiguration.getHuman().setVisionDistance(visionDistance);
-            }
-        });
-        
-        return panel;
-    }
-    
-    private JPanel createZombieConfigurationPanel() {
-        final int latencyPeriod, speed, speedAtRest, visionDistance, olfactoryDistance;
-        JPanel panel;
-        JLabel latencyPeriodLabel, speedLabel, speedAtRestLabel, visionDistanceLabel, olfactoryDistanceLabel;
-        final JSlider latencyPeriodSlider, speedSlider, speedAtRestSlider, visionDistanceSlider, olfactoryDistanceSlider;
-        
-        latencyPeriod           = this.linkedConfiguration.getZombieEpidemic().getInfectedLatencyPeriod();
-        speed                   = this.linkedConfiguration.getZombieEpidemic().getZombieSpeed();
-        speedAtRest             = this.linkedConfiguration.getZombieEpidemic().getZombieSpeedAtRest();
-        visionDistance          = this.linkedConfiguration.getZombieEpidemic().getZombieVisionDistance();
-        olfactoryDistance       = this.linkedConfiguration.getZombieEpidemic().getZombieOlfactoryDistance();
-        panel                   = this.createTitledPanel("ZOMBI");
-        latencyPeriodLabel      = this.createLabel("Temps per a transformar-se", 15);
-        speedLabel              = this.createLabel("Velocitat", 15);
-        speedAtRestLabel        = this.createLabel("Velocitat quan no veu humans", 15);
-        visionDistanceLabel     = this.createLabel("Capacitat de visió", 15);
-        olfactoryDistanceLabel  = this.createLabel("Capacitat olfactiva", 15);
-        latencyPeriodSlider     = this.createMinMaxSlider(latencyPeriod, MIN_INFECTED_LATENCY_PERIOD, MAX_INFECTED_LATENCY_PERIOD, "Instantani", "Llarg");//this.createTopLabelsSlider(latencyPeriod, MIN_INFECTED_LATENCY_PERIOD, MAX_INFECTED_LATENCY_PERIOD, new JLabel("Instantani"), new JLabel("Llarg"), new JLabel("Zombi"));
-        speedSlider             = this.createMinMaxSlider(speed, MIN_ZOMBIE_SPEED, MAX_ZOMBIE_SPEED, "Baixa", "Alta");//this.createTopLabelsSlider(speed, MIN_ZOMBIE_SPEED, MAX_ZOMBIE_SPEED, new JLabel("Baixa"), new JLabel("Alta"), new JLabel("Zombi"));
-        speedAtRestSlider       = this.createMinMaxSlider(speedAtRest, MIN_ZOMBIE_SPEED_AT_REST, MAX_ZOMBIE_SPEED_AT_REST, "Baixa", "Alta");//this.createTopLabelsSlider(speedAtRest, MIN_ZOMBIE_SPEED_AT_REST, MAX_ZOMBIE_SPEED_AT_REST, new JLabel("Nul·la"), new JLabel("Alta"), new JLabel("Zombi"));
-        visionDistanceSlider    = this.createMinMaxSlider(visionDistance, MIN_ZOMBIE_VISION_DISTANCE, MAX_ZOMBIE_VISION_DISTANCE, "Baixa", "Alta");//this.createTopLabelsSlider(visionDistance, MIN_ZOMBIE_VISION_DISTANCE, MAX_ZOMBIE_VISION_DISTANCE, new JLabel("Baixa"), new JLabel("Alta"), new JLabel("Zombi"));
-        olfactoryDistanceSlider = this.createMinMaxSlider(olfactoryDistance, MIN_ZOMBIE_OLFACTORY_DISTANCE, MAX_ZOMBIE_OLFACTORY_DISTANCE, "Nul·la", "Alta");//this.createTopLabelsSlider(olfactoryDistance, MIN_ZOMBIE_OLFACTORY_DISTANCE, MAX_ZOMBIE_OLFACTORY_DISTANCE, new JLabel("Nul·la"), new JLabel("Alta"), new JLabel("Zombi"));
-        
-        panel.setLayout(new GridBagLayout());
-        panel.add(latencyPeriodLabel, this.createConstraints(0, 0));
-        panel.add(latencyPeriodSlider, this.createConstraints(0, 1));
-        panel.add(speedLabel, this.createConstraints(0, 2));
-        panel.add(speedSlider, this.createConstraints(0, 3));
-        panel.add(speedAtRestLabel, this.createConstraints(0, 4));
-        panel.add(speedAtRestSlider, this.createConstraints(0, 5));
-        panel.add(visionDistanceLabel, this.createConstraints(0, 6));
-        panel.add(visionDistanceSlider, this.createConstraints(0, 7));
-        panel.add(olfactoryDistanceLabel, this.createConstraints(0, 8));
-        panel.add(olfactoryDistanceSlider, this.createConstraints(0, 9));
-        panel.add(new JLabel(), this.createConstraints(0, 10, 1, 1, 1));
-        
-        latencyPeriodSlider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                int latencyPeriod;
-                
-                latencyPeriod = latencyPeriodSlider.getValue();
-                
-                linkedConfiguration.getZombieEpidemic().setInfectedLatencyPeriod(latencyPeriod);
-            }
-        });
-        
-        speedSlider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                int speed;
-                
-                speed = speedSlider.getValue();
-                
-                linkedConfiguration.getZombieEpidemic().setZombieSpeed(speed);
-            }
-        });
-        
-        speedAtRestSlider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                int speed;
-                
-                speed = speedAtRestSlider.getValue();
-                
-                linkedConfiguration.getZombieEpidemic().setZombieSpeedAtRest(speed);
-            }
-        });
-        
-        visionDistanceSlider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                int visionDistance;
-                
-                visionDistance = visionDistanceSlider.getValue();
-                
-                linkedConfiguration.getZombieEpidemic().setZombieVisionDistance(visionDistance);
-            }
-        });
-        
-        olfactoryDistanceSlider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                int olfactoryDistance;
-                
-                olfactoryDistance = olfactoryDistanceSlider.getValue();
-                
-                linkedConfiguration.getZombieEpidemic().setZombieOlfactoryDistance(olfactoryDistance);
-            }
-        });
-        
-        return panel;
-    }
-    
+    /**
+     * Returns the panel used for configuring the initial population of the simulation.
+     * @return the panel
+     */
     private JPanel createZombieHumanInteractionPanel() {
         int zombieWinLosePercentage, zombieWinLosePercentageWhenArmed, 
             zombieKillInfectPercentage, humanKillEscapePercentage;
@@ -755,6 +710,7 @@ public class ConfigurationPane extends CarouselPanel {
         JLabel humanWinLoseLabel, humanWinLoseWhenArmedLabel, zombieKillInfectLabel, humanKillEscapeLabel;
         final JSlider humanWinLoseSlider, humanWinLoseWhenArmedSlider, zombieKillInfectSlider, humanKillEscapeSlider;
         
+        //Create the components
         zombieWinLosePercentage          = (int)(this.linkedConfiguration.getHumanZombieInteraction().getZombieWinLoseRatio() * 100);
         zombieWinLosePercentageWhenArmed = (int)(this.linkedConfiguration.getResources().getWeapon().getZombieWinLoseRatioAgainstArmedHuman() * 100);
         zombieKillInfectPercentage       = (int)(this.linkedConfiguration.getHumanZombieInteraction().getZombieKillInfectRatio() * 100);
@@ -769,6 +725,7 @@ public class ConfigurationPane extends CarouselPanel {
         zombieKillInfectSlider           = this.createThickSlider(zombieKillInfectPercentage, 0, 100, Color.BLACK, CUSTOM_YELLOW, "L'humà mor", "L'humà s'infecta", "%");
         humanKillEscapeSlider            = this.createThickSlider(humanKillEscapePercentage, 0, 100, Color.BLACK, CUSTOM_GREEN, "El zombi mor", "L'humà escapa", "%");
         
+        //Add the components to the container
         panel.setLayout(new GridBagLayout());
         panel.add(humanWinLoseLabel, this.createConstraints(0, 0));
         panel.add(humanWinLoseSlider, this.createConstraints(0, 1));
@@ -780,6 +737,7 @@ public class ConfigurationPane extends CarouselPanel {
         panel.add(humanKillEscapeSlider, this.createConstraints(0, 7));
         panel.add(new JLabel(), this.createConstraints(GridBagConstraints.NONE, 0, 8, 1, 0, 1));
         
+        //Add listeners to components
         humanWinLoseSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -787,6 +745,7 @@ public class ConfigurationPane extends CarouselPanel {
                 
                 zombieWinLoseRatio = (100d - humanWinLoseSlider.getValue()) / 100;
                 
+                //Update the configuration object
                 linkedConfiguration.getHumanZombieInteraction().setZombieWinLoseRatio(zombieWinLoseRatio);
             }
         });
@@ -798,6 +757,7 @@ public class ConfigurationPane extends CarouselPanel {
                 
                 zombieWinLoseRatio = (100d - humanWinLoseWhenArmedSlider.getValue()) / 100;
                 
+                //Update the configuration object
                 linkedConfiguration.getResources().getWeapon().setZombieWinLoseRatioAgainstArmedHuman(zombieWinLoseRatio);
             }
         });
@@ -809,6 +769,7 @@ public class ConfigurationPane extends CarouselPanel {
                 
                 zombieKillInfectRatio = zombieKillInfectSlider.getValue() / 100d;
                 
+                //Update the configuration object
                 linkedConfiguration.getHumanZombieInteraction().setZombieKillInfectRatio(zombieKillInfectRatio);
             }
         });
@@ -820,6 +781,7 @@ public class ConfigurationPane extends CarouselPanel {
                 
                 humanKillEscape = humanKillEscapeSlider.getValue() / 100d;
                 
+                //Update the configuration object
                 linkedConfiguration.getHumanZombieInteraction().setHumanKillEscapeRatio(humanKillEscape);
             }
         });
@@ -827,6 +789,10 @@ public class ConfigurationPane extends CarouselPanel {
         return panel;
     }
     
+    /**
+     * Returns the panel used for configuring the agents' paramters
+     * @return the panel
+     */
     private JPanel createAgentsConfigurationPanel() {
         JPanel container, humanConfigurationPanel, 
                zombieConfigurationPanel;
@@ -845,6 +811,171 @@ public class ConfigurationPane extends CarouselPanel {
         return container;
     }
     
+    /**
+     * Returns the panel used for configuring humans' parameters.
+     * @return the panel
+     */
+    private JPanel createHumanConfigurationPanel() {
+        final int speed, visionDistance;
+        JPanel panel;
+        JLabel speedLabel, visionDistanceLabel;
+        final JSlider speedSlider, visionDistanceSlider;
+
+        //Create the components
+        speed                = this.linkedConfiguration.getHuman().getSpeed();
+        visionDistance       = this.linkedConfiguration.getHuman().getVisionDistance();
+        panel                = this.createTitledPanel("HUMÀ");
+        speedLabel           = this.createLabel("Velocitat", 15);
+        visionDistanceLabel  = this.createLabel("Capacitat de visió", 15);
+        speedSlider          = this.createMinMaxSlider(speed, MIN_HUMAN_SPEED, MAX_HUMAN_SPEED, "Baixa", "Alta");//this.createTopLabelsSlider(speed, MIN_HUMAN_SPEED, MAX_HUMAN_SPEED, new JLabel("Baixa"), new JLabel("Alta"), new JLabel("Humà"));
+        visionDistanceSlider = this.createMinMaxSlider(visionDistance, MIN_HUMAN_VISION_DISTANCE, MAX_HUMAN_VISION_DISTANCE, "Baixa", "Alta");//this.createTopLabelsSlider(visionDistance, MIN_HUMAN_VISION_DISTANCE, MAX_HUMAN_VISION_DISTANCE, new JLabel("Baixa"), new JLabel("Alta"), new JLabel("Humà"));
+        
+        //Add the components to the container
+        panel.setLayout(new GridBagLayout());
+        panel.add(speedLabel, this.createConstraints(0, 0));
+        panel.add(speedSlider, this.createConstraints(0, 1));
+        panel.add(visionDistanceLabel, this.createConstraints(0, 2));
+        panel.add(visionDistanceSlider, this.createConstraints(0, 3));
+        panel.add(new JLabel(), this.createConstraints(0, 4, 1, 1, 1));
+        
+        //Add listeners to components
+        speedSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int speed;
+                
+                speed = speedSlider.getValue();
+                
+                //Update the configuration object
+                linkedConfiguration.getHuman().setSpeed(speed);
+            }
+        });
+        
+        visionDistanceSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int visionDistance;
+                
+                visionDistance = visionDistanceSlider.getValue();
+                
+                //Update the configuration object
+                linkedConfiguration.getHuman().setVisionDistance(visionDistance);
+            }
+        });
+        
+        return panel;
+    }
+    
+    /**
+     * Returns the panel used for configuring zombies' parameters.
+     * @return the panel
+     */
+    private JPanel createZombieConfigurationPanel() {
+        final int latencyPeriod, speed, speedAtRest, visionDistance, olfactoryDistance;
+        JPanel panel;
+        JLabel latencyPeriodLabel, speedLabel, speedAtRestLabel, visionDistanceLabel, olfactoryDistanceLabel;
+        final JSlider latencyPeriodSlider, speedSlider, speedAtRestSlider, visionDistanceSlider, olfactoryDistanceSlider;
+        
+        //Create the components
+        latencyPeriod           = this.linkedConfiguration.getZombieEpidemic().getInfectedLatencyPeriod();
+        speed                   = this.linkedConfiguration.getZombieEpidemic().getZombieSpeed();
+        speedAtRest             = this.linkedConfiguration.getZombieEpidemic().getZombieSpeedAtRest();
+        visionDistance          = this.linkedConfiguration.getZombieEpidemic().getZombieVisionDistance();
+        olfactoryDistance       = this.linkedConfiguration.getZombieEpidemic().getZombieOlfactoryDistance();
+        panel                   = this.createTitledPanel("ZOMBI");
+        latencyPeriodLabel      = this.createLabel("Temps per a transformar-se", 15);
+        speedLabel              = this.createLabel("Velocitat", 15);
+        speedAtRestLabel        = this.createLabel("Velocitat quan no veu humans", 15);
+        visionDistanceLabel     = this.createLabel("Capacitat de visió", 15);
+        olfactoryDistanceLabel  = this.createLabel("Capacitat olfactiva", 15);
+        latencyPeriodSlider     = this.createMinMaxSlider(latencyPeriod, MIN_INFECTED_LATENCY_PERIOD, MAX_INFECTED_LATENCY_PERIOD, "Instantani", "Llarg");//this.createTopLabelsSlider(latencyPeriod, MIN_INFECTED_LATENCY_PERIOD, MAX_INFECTED_LATENCY_PERIOD, new JLabel("Instantani"), new JLabel("Llarg"), new JLabel("Zombi"));
+        speedSlider             = this.createMinMaxSlider(speed, MIN_ZOMBIE_SPEED, MAX_ZOMBIE_SPEED, "Baixa", "Alta");//this.createTopLabelsSlider(speed, MIN_ZOMBIE_SPEED, MAX_ZOMBIE_SPEED, new JLabel("Baixa"), new JLabel("Alta"), new JLabel("Zombi"));
+        speedAtRestSlider       = this.createMinMaxSlider(speedAtRest, MIN_ZOMBIE_SPEED_AT_REST, MAX_ZOMBIE_SPEED_AT_REST, "Baixa", "Alta");//this.createTopLabelsSlider(speedAtRest, MIN_ZOMBIE_SPEED_AT_REST, MAX_ZOMBIE_SPEED_AT_REST, new JLabel("Nul·la"), new JLabel("Alta"), new JLabel("Zombi"));
+        visionDistanceSlider    = this.createMinMaxSlider(visionDistance, MIN_ZOMBIE_VISION_DISTANCE, MAX_ZOMBIE_VISION_DISTANCE, "Baixa", "Alta");//this.createTopLabelsSlider(visionDistance, MIN_ZOMBIE_VISION_DISTANCE, MAX_ZOMBIE_VISION_DISTANCE, new JLabel("Baixa"), new JLabel("Alta"), new JLabel("Zombi"));
+        olfactoryDistanceSlider = this.createMinMaxSlider(olfactoryDistance, MIN_ZOMBIE_OLFACTORY_DISTANCE, MAX_ZOMBIE_OLFACTORY_DISTANCE, "Nul·la", "Alta");//this.createTopLabelsSlider(olfactoryDistance, MIN_ZOMBIE_OLFACTORY_DISTANCE, MAX_ZOMBIE_OLFACTORY_DISTANCE, new JLabel("Nul·la"), new JLabel("Alta"), new JLabel("Zombi"));
+        
+        //Add the components to the container
+        panel.setLayout(new GridBagLayout());
+        panel.add(latencyPeriodLabel, this.createConstraints(0, 0));
+        panel.add(latencyPeriodSlider, this.createConstraints(0, 1));
+        panel.add(speedLabel, this.createConstraints(0, 2));
+        panel.add(speedSlider, this.createConstraints(0, 3));
+        panel.add(speedAtRestLabel, this.createConstraints(0, 4));
+        panel.add(speedAtRestSlider, this.createConstraints(0, 5));
+        panel.add(visionDistanceLabel, this.createConstraints(0, 6));
+        panel.add(visionDistanceSlider, this.createConstraints(0, 7));
+        panel.add(olfactoryDistanceLabel, this.createConstraints(0, 8));
+        panel.add(olfactoryDistanceSlider, this.createConstraints(0, 9));
+        panel.add(new JLabel(), this.createConstraints(0, 10, 1, 1, 1));
+        
+        //Add listeners to components
+        latencyPeriodSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int latencyPeriod;
+                
+                latencyPeriod = latencyPeriodSlider.getValue();
+                
+                //Update configuration object
+                linkedConfiguration.getZombieEpidemic().setInfectedLatencyPeriod(latencyPeriod);
+            }
+        });
+        
+        speedSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int speed;
+                
+                speed = speedSlider.getValue();
+                
+                //Update configuration object
+                linkedConfiguration.getZombieEpidemic().setZombieSpeed(speed);
+            }
+        });
+        
+        speedAtRestSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int speed;
+                
+                speed = speedAtRestSlider.getValue();
+                
+                //Update configuration object
+                linkedConfiguration.getZombieEpidemic().setZombieSpeedAtRest(speed);
+            }
+        });
+        
+        visionDistanceSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int visionDistance;
+                
+                visionDistance = visionDistanceSlider.getValue();
+                
+                //Update configuration object
+                linkedConfiguration.getZombieEpidemic().setZombieVisionDistance(visionDistance);
+            }
+        });
+        
+        olfactoryDistanceSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int olfactoryDistance;
+                
+                olfactoryDistance = olfactoryDistanceSlider.getValue();
+                
+                //Update configuration object
+                linkedConfiguration.getZombieEpidemic().setZombieOlfactoryDistance(olfactoryDistance);
+            }
+        });
+        
+        return panel;
+    }
+    
+    /**
+     * Returns the panel used for configuring resources' parameters
+     * @return the panel
+     */
     private JPanel createResourcesConfigurationPanel() {
         JPanel container, totalResourcesPanel, vaccinationConfigurationPanel, 
                wallConfigurationPanel, weaponConfigurationPanel;
@@ -864,21 +995,28 @@ public class ConfigurationPane extends CarouselPanel {
         return container;
     }
     
+    /**
+     * Returns the panel used for configuring the total amount of resources
+     * @return the panel
+     */
     private JPanel createTotalResourcesPanel() {
         final int resourcesAvailable;
         JPanel panel;
         JLabel totalResourcesLabel;
         final JSpinner totalResourcesSpinner;
         
+        //Create the components
         resourcesAvailable    = this.linkedConfiguration.getResources().getTotalResourcesAvailable();
         panel                 = this.createTitledPanel("DINERS DISPONIBLES", 0, 0, 5, 0);
         totalResourcesLabel   = this.createLabel("Diners disponibles inicialment", 15);
         totalResourcesSpinner = new JSpinner(new SpinnerNumberModel(resourcesAvailable, MIN_TOTAL_RESOURCES, MAX_TOTAL_RESOURCES, 1));
         
+        //Add the components to the container
         panel.setLayout(new GridBagLayout());
         panel.add(totalResourcesLabel, this.createConstraints(0, 0));
         panel.add(totalResourcesSpinner, this.createConstraints(GridBagConstraints.NONE, 0, 1, 1, 1, 1));
         
+        //Add listeners to components
         totalResourcesSpinner.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -886,6 +1024,7 @@ public class ConfigurationPane extends CarouselPanel {
                 
                 totalResources = (int)totalResourcesSpinner.getValue();
                 
+                //Update configuration object
                 linkedConfiguration.getResources().setTotalResourcesAvailable(totalResources);
             }
         });
@@ -893,12 +1032,17 @@ public class ConfigurationPane extends CarouselPanel {
         return panel;
     }
     
+    /**
+     * Returns the panel used for configuring vaccination parameters
+     * @return the panel
+     */
     private JPanel createVaccinationConfigurationPanel() {
         final int vaccinationKitCost, vaccinatedPerKit;
         JPanel panel;
         JLabel vaccinationKitCostLabel, vaccinatedPerKitLabel;
         final JSpinner vaccinationKitCostSpinner, vaccinatedPerKitSpinner;
         
+        //Create the components
         vaccinationKitCost        = this.linkedConfiguration.getResources().getVaccination().getVaccinationKitCost();
         vaccinatedPerKit          = this.linkedConfiguration.getResources().getVaccination().getVaccinatedPerVaccinationKit();
         panel                     = this.createTitledPanel("VACUNACIÓ", 0, 0, 5, 0);
@@ -907,12 +1051,14 @@ public class ConfigurationPane extends CarouselPanel {
         vaccinationKitCostSpinner = new JSpinner(new SpinnerNumberModel(vaccinationKitCost, MIN_VACCINATION_KIT_COST, MAX_VACCINATION_KIT_COST, 1));
         vaccinatedPerKitSpinner   = new JSpinner(new SpinnerNumberModel(vaccinatedPerKit, MIN_VACCINATED_PER_KIT, MAX_VACCINATED_PER_KIT, 1));
         
+        //Add the components to the container
         panel.setLayout(new GridBagLayout());
         panel.add(vaccinationKitCostLabel, this.createConstraints(0, 0));
         panel.add(vaccinationKitCostSpinner, this.createConstraints(GridBagConstraints.NONE, 0, 1, 1, 1, 1));
         panel.add(vaccinatedPerKitLabel, this.createConstraints(0, 2));
         panel.add(vaccinatedPerKitSpinner, this.createConstraints(GridBagConstraints.NONE, 0, 3, 1, 1, 1));
         
+        //Add listeners to components
         vaccinationKitCostSpinner.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -920,6 +1066,7 @@ public class ConfigurationPane extends CarouselPanel {
                 
                 cost = (int)vaccinationKitCostSpinner.getValue();
                 
+                //Update configuration object
                 linkedConfiguration.getResources().getVaccination().setVaccinationKitCost(cost);
             }
         });
@@ -931,6 +1078,7 @@ public class ConfigurationPane extends CarouselPanel {
                 
                 vaccinated = (int)vaccinatedPerKitSpinner.getValue();
                 
+                //Update configuration object
                 linkedConfiguration.getResources().getVaccination().setVaccinatedPerVaccinationKit(vaccinated);
             }
         });
@@ -938,12 +1086,17 @@ public class ConfigurationPane extends CarouselPanel {
         return panel;
     }
     
+    /**
+     * Returns the panel used for configuring walls parameters
+     * @return the panel
+     */
     private JPanel createWallConfigurationPanel() {
         final int wallUnitCost, zombiesNeeded;
         JPanel panel;
         JLabel wallUnitCostLabel, zombiesNeededLabel;
         final JSpinner wallUnitCostSpinner, zombiesNeededSpinner;
         
+        //Create the components
         wallUnitCost         = this.linkedConfiguration.getResources().getWall().getWallUnitCost();
         zombiesNeeded        = this.linkedConfiguration.getResources().getWall().getZombiesNeededToBreakDownAWall();
         panel                = this.createTitledPanel("CONSTRUCCIÓ DE PARETS", 0, 0, 5, 0);
@@ -952,12 +1105,14 @@ public class ConfigurationPane extends CarouselPanel {
         wallUnitCostSpinner  = new JSpinner(new SpinnerNumberModel(wallUnitCost, MIN_WALL_UNIT_COST, MAX_WALL_UNIT_COST, 1));
         zombiesNeededSpinner = new JSpinner(new SpinnerNumberModel(zombiesNeeded, MIN_ZOMBIES_NEEDED_WALL, MAX_ZOMBIES_NEEDED_WALL, 1));
         
+        //Add the components to the container
         panel.setLayout(new GridBagLayout());
         panel.add(wallUnitCostLabel, this.createConstraints(0, 0));
         panel.add(wallUnitCostSpinner, this.createConstraints(GridBagConstraints.NONE, 0, 1, 1, 1, 1));
         panel.add(zombiesNeededLabel, this.createConstraints(0, 2));
         panel.add(zombiesNeededSpinner, this.createConstraints(GridBagConstraints.NONE, 0, 3, 1, 1, 1));
         
+        //Add listeners to components
         wallUnitCostSpinner.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -965,6 +1120,7 @@ public class ConfigurationPane extends CarouselPanel {
                 
                 cost = (int)wallUnitCostSpinner.getValue();
                 
+                //Update configuration object
                 linkedConfiguration.getResources().getWall().setWallUnitCost(cost);
             }
         });
@@ -976,6 +1132,7 @@ public class ConfigurationPane extends CarouselPanel {
                 
                 numZombies = (int)zombiesNeededSpinner.getValue();
                 
+                //Update configuration object
                 linkedConfiguration.getResources().getWall().setZombiesNeededToBreakDownAWall(numZombies);
             }
         });
@@ -983,6 +1140,10 @@ public class ConfigurationPane extends CarouselPanel {
         return panel;
     }
     
+    /**
+     * Returns the panel used for configuring weapon parameters
+     * @return the panel
+     */
     private JPanel createWeaponConfigurationPanel() {
         final int weaponKitCost, armedPerKit, bulletsPerWeapon, 
                   bulletsToKill, trajectoryDiversionDegrees;
@@ -993,6 +1154,7 @@ public class ConfigurationPane extends CarouselPanel {
                        bulletsToKillSpinner, trajectoryDiversionSpinner;
         final DiversionDegreesRepresentation diversionRepresentation;
         
+        //Create the components
         weaponKitCost              = this.linkedConfiguration.getResources().getWeapon().getWeaponKitCost();
         armedPerKit                = this.linkedConfiguration.getResources().getWeapon().getArmedPerWeaponKit();
         bulletsPerWeapon           = this.linkedConfiguration.getResources().getWeapon().getBulletsPerWeapon();
@@ -1015,6 +1177,10 @@ public class ConfigurationPane extends CarouselPanel {
         diversionRepresentation.setMantainAspectRatioAnchor(Anchor.Center);
         diversionRepresentation.setOpaque(false);
         
+        trajectoryDiversionSpinner.setPreferredSize(weaponKitCostSpinner.getPreferredSize());
+        trajectoryDiversionSpinner.setMinimumSize(weaponKitCostSpinner.getMinimumSize());
+        
+        //Add the components to the container
         panel.setLayout(new GridBagLayout());
         panel.add(weaponKitCostLabel, this.createConstraints(0, 0));
         panel.add(weaponKitCostSpinner, this.createConstraints(GridBagConstraints.NONE, 0, 1, 1, 1, 0));
@@ -1028,9 +1194,7 @@ public class ConfigurationPane extends CarouselPanel {
         panel.add(trajectoryDiversionSpinner, this.createConstraints(GridBagConstraints.NONE, 0, 9, 1, 1, 0));
         panel.add(diversionRepresentation, this.createConstraints(GridBagConstraints.BOTH, 0, 10, 1, 1, 1));
         
-        trajectoryDiversionSpinner.setPreferredSize(weaponKitCostSpinner.getPreferredSize());
-        trajectoryDiversionSpinner.setMinimumSize(weaponKitCostSpinner.getMinimumSize());
-        
+        //Add listeners to components
         weaponKitCostSpinner.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -1038,6 +1202,7 @@ public class ConfigurationPane extends CarouselPanel {
                 
                 cost = (int)weaponKitCostSpinner.getValue();
                 
+                //Update configuration object
                 linkedConfiguration.getResources().getWeapon().setWeaponKitCost(cost);
             }
         });
@@ -1049,6 +1214,7 @@ public class ConfigurationPane extends CarouselPanel {
                 
                 numArmed = (int)armedPerKitSpinner.getValue();
                 
+                //Update configuration object
                 linkedConfiguration.getResources().getWeapon().setArmedPerWeaponKit(numArmed);
             }
         });
@@ -1060,6 +1226,7 @@ public class ConfigurationPane extends CarouselPanel {
                 
                 numBullets = (int)bulletsPerWeaponSpinner.getValue();
                 
+                //Update configuration object
                 linkedConfiguration.getResources().getWeapon().setBulletsPerWeapon(numBullets);
             }
         });
@@ -1071,6 +1238,7 @@ public class ConfigurationPane extends CarouselPanel {
                 
                 bulletsToKill = (int)bulletsToKillSpinner.getValue();
                 
+                //Update configuration object
                 linkedConfiguration.getResources().getWeapon().setBulletsNeededToKill(bulletsToKill);
             }
         });
@@ -1082,6 +1250,7 @@ public class ConfigurationPane extends CarouselPanel {
                 
                 diversionDegrees = (int)trajectoryDiversionSpinner.getValue() / 2;
                 
+                //Update configuration object and the diversion dregrees representation
                 linkedConfiguration.getResources().getWeapon().setBulletTrajectoryDiversionDegrees(diversionDegrees);
                 diversionRepresentation.setDiversionDegrees(diversionDegrees);
             }
@@ -1090,6 +1259,15 @@ public class ConfigurationPane extends CarouselPanel {
         return panel;
     }
     
+    /**
+     * Create a panel with a thick titled border and an invisible border.
+     * @param title the title of the panel
+     * @param top the top invisible space
+     * @param left the left intivisle space
+     * @param bottom the bottom invisible space
+     * @param right the right invisible space
+     * @return the panel
+     */
     private JPanel createTitledPanel(String title, int top, int left, int bottom, int right) {
         JPanel panel;
         ThickTitledBorder titledBorder;
@@ -1106,10 +1284,21 @@ public class ConfigurationPane extends CarouselPanel {
         return panel;
     }
     
+    /**
+     * Create a panel with a thick titled border.
+     * @param title the title of the panel
+     * @return the panel
+     */
     private JPanel createTitledPanel(String title) {
         return this.createTitledPanel(title, 0, 0, 0, 0);
     }
     
+    /**
+     * Create a label.
+     * @param text the text of the label
+     * @param fontSize the size of the text's font
+     * @return the label
+     */
     private JLabel createLabel(String text, float fontSize) {
         JLabel label;
         
@@ -1121,62 +1310,15 @@ public class ConfigurationPane extends CarouselPanel {
         return label;
     }
     
-//    private JSlider createTopLabelsSlider(int value, int minValue, int maxValue, JLabel leftLabel, JLabel rightLabel,
-//                                          JLabel thumbLabel) {
-//        
-//        JSlider slider;
-//        TopPlacedLabelsSliderUI sliderUI;
-//        Hashtable<Integer, JLabel> labels;
-//        
-//        slider   = new JSlider(minValue, maxValue, value);
-//        sliderUI = new TopPlacedLabelsSliderUI(slider);
-//        labels   = new Hashtable<>();
-//        
-//        labels.put(slider.getMinimum(), leftLabel);
-//        labels.put(slider.getMaximum(), rightLabel);
-//        labels.put(mantainBetween(slider.getValue(), slider.getMinimum() + 1, slider.getMaximum() - 1), thumbLabel);
-//        
-//        slider.setOpaque(false);
-//        slider.setLabelTable(labels);
-//        slider.setPaintLabels(true);
-//        slider.setUI(sliderUI);
-//        slider.addChangeListener(new ChangeListener() {
-//            @Override
-//            public void stateChanged(ChangeEvent e) {
-//                JLabel thumbLabel;
-//                JSlider slider;
-//                Dictionary<Integer, JLabel> labels;
-//                int oldValue;
-//                
-//                slider     = (JSlider)e.getSource();
-//                
-//                if(slider.getValue() != slider.getMinimum() && slider.getValue() != slider.getMaximum()) {
-//                    labels     = slider.getLabelTable();
-//                    oldValue   = -1;
-//
-//                    for(Enumeration<Integer> labelsKeys = labels.keys(); labelsKeys.hasMoreElements(); ) {
-//                        oldValue = labelsKeys.nextElement();
-//
-//                        if(oldValue != slider.getMinimum() && oldValue != slider.getMaximum()) {
-//                            break;
-//                        }
-//                    }
-//
-//                    if(oldValue != -1) {
-//                        thumbLabel = labels.remove(oldValue);
-//
-//                        labels.put(slider.getValue(), thumbLabel);
-//                    }
-//
-//                    slider.repaint();
-//                }
-//            }
-//        
-//        });
-//        
-//        return slider;
-//    }
-    
+    /**
+     * Create a slider with labels on the minimum and maximum value.
+     * @param value the default value
+     * @param minValue the minimum value
+     * @param maxValue the maximum value
+     * @param minText the text of the minimum value
+     * @param maxText the text of the maximum value
+     * @return the slider
+     */
     private JSlider createMinMaxSlider(int value, int minValue, int maxValue, String minText, String maxText) {
         JSlider slider;
         Hashtable<Integer, JLabel> labels;
@@ -1194,6 +1336,18 @@ public class ConfigurationPane extends CarouselPanel {
         return slider;
     }
     
+    /**
+     * Create a thick slider with autoupdated labels with left and right value.
+     * @param value the default value of the slider
+     * @param minValue the minimum value of the slider 
+     * @param maxValue the maximum value of the slider
+     * @param leftColor the color of the left part of the bar
+     * @param rightColor the color of the right part of the bar
+     * @param leftText the text of the left value
+     * @param rightText the text of the right value
+     * @param valueUnit
+     * @return the slider
+     */
     private JSlider createThickSlider(int value, int minValue, int maxValue, Color leftColor, Color rightColor, 
                                       final String leftText, final String rightText, final String valueUnit) {
         JSlider slider;
@@ -1223,6 +1377,7 @@ public class ConfigurationPane extends CarouselPanel {
                 leftLabel  = (JLabel)labels.get(slider.getMinimum());
                 rightLabel = (JLabel)labels.get(slider.getMaximum());
                 
+                //Update the values of the labels
                 leftLabel.setText(leftText + " (" + slider.getValue() + valueUnit + ")");
                 rightLabel.setText(rightText + " (" + (slider.getMaximum() - slider.getValue()) + valueUnit + ")");
                 slider.repaint();
@@ -1232,7 +1387,10 @@ public class ConfigurationPane extends CarouselPanel {
         
         return slider;
     }
-    
+
+    /**
+     * Create a GridBagConstraints object with the specefied values
+     */
     private GridBagConstraints createConstraints(int anchor, int fill, int gridX, int gridY, int gridWidth,
                                                  int gridHeight, double weightX, double weightY) {
         GridBagConstraints constraints;
@@ -1251,36 +1409,62 @@ public class ConfigurationPane extends CarouselPanel {
         return constraints;
     }
     
+    /**
+     * Create a GridBagConstraints object with the specefied values
+     */
     private GridBagConstraints createConstraints(int fill, int gridX, int gridY, int gridWidth,
                                                  int gridHeight, double weightX, double weightY) {
         
         return this.createConstraints(GridBagConstraints.WEST, fill, gridX, gridY, gridWidth, gridHeight, weightX, weightY);
     }
     
+    /**
+     * Create a GridBagConstraints object with the specefied values
+     */
     private GridBagConstraints createConstraints(int fill, int gridX, int gridY, int gridWidth,
                                                  double weightX, double weightY) {
         
         return this.createConstraints(fill, gridX, gridY, gridWidth, 1, weightX, weightY);
     }
     
+    /**
+     * Create a GridBagConstraints object with the specefied values
+     */
     private GridBagConstraints createConstraints(int gridX, int gridY, int gridWidth, double weightX, 
                                                  double weightY) {
         
         return this.createConstraints(GridBagConstraints.HORIZONTAL, gridX, gridY, gridWidth, weightX, weightY);
     }
     
+    /**
+     * Create a GridBagConstraints object with the specefied values
+     */
     private GridBagConstraints createConstraints(int gridX, int gridY, int gridWidth, double weightX) {
         return this.createConstraints(gridX, gridY, gridWidth, weightX, 0);
     }
     
+    /**
+     * Create a GridBagConstraints object with the specefied values
+     */
     private GridBagConstraints createConstraints(int gridX, int gridY, int gridWidth) {
         return this.createConstraints(gridX, gridY, gridWidth, 1);
     }
     
+    /**
+     * Create a GridBagConstraints object with the specefied values
+     */
     private GridBagConstraints createConstraints(int gridX, int gridY) {
         return this.createConstraints(gridX, gridY, 1);
     }
     
+    /**
+     * Checks if the value is between the minimum and the maximum.
+     * @param value the value
+     * @param min the minimum value
+     * @param max the maximum value
+     * @return the value if it is between the minimum and the maximum, the minimum
+     * if the value is lower than the minimum and the maximum otherwise
+     */
     private int mantainBetween(int value, int min, int max) {
         if(value < min) {
             value = min;
@@ -1291,7 +1475,15 @@ public class ConfigurationPane extends CarouselPanel {
         
         return value;
     }
-    
+     
+    /**
+     * Checks if the value is between the minimum and the maximum.
+     * @param value the value
+     * @param min the minimum value
+     * @param max the maximum value
+     * @return the value if it is between the minimum and the maximum, the minimum
+     * if the value is lower than the minimum and the maximum otherwise
+     */
     private double mantainBetween(double value, double min, double max) {
         if(value < min) {
             value = min;

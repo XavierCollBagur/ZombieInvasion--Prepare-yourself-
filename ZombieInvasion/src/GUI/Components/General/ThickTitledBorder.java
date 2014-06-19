@@ -28,13 +28,29 @@ import java.awt.RenderingHints;
 import javax.swing.border.AbstractBorder;
 
 /**
- *
+ * This class represents a border with a title in a rectangle on the top.
  * @author Xavier
  */
 public class ThickTitledBorder extends AbstractBorder {
     //Attributes
-    private Color backgroundColor, fontColor;
+    /**
+     * The color of the background of the title's rectangle.
+     */
+    private Color backgroundColor;
+    
+    /**
+     * The color of the title's font.
+     */
+    private Color fontColor;
+    
+    /**
+     * The height of the title's rectangle.
+     */
     private int titleHeight;
+    
+    /**
+     * The title of the border.
+     */
     String title;
 
     public ThickTitledBorder(String title, int titleHeight, Color backgroundColor, Color fontColor) {
@@ -50,20 +66,26 @@ public class ThickTitledBorder extends AbstractBorder {
     public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
         Graphics2D g2d;
         FontMetrics fm;
+        int titleX, titleY;
         
         g2d = (Graphics2D)g;
         
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setFont(g2d.getFont().deriveFont(Font.BOLD, titleHeight - 10));
       
-        fm = g2d.getFontMetrics();
-        
+        //Paint the rectangle's background
         g2d.setColor(this.backgroundColor);
         g2d.fillRect(x, y, width, this.titleHeight);
         
-        g2d.setColor(this.fontColor);
-        g2d.drawString(this.title, x + 5, y + (this.titleHeight - fm.getHeight()) / 2 + fm.getAscent());
+        //Paint the title
+        fm     = g2d.getFontMetrics();
+        titleX = x + 5;
+        titleY = y + (this.titleHeight - fm.getHeight()) / 2 + fm.getAscent();
         
+        g2d.setColor(this.fontColor);
+        g2d.drawString(this.title, titleX, titleY);
+        
+        //Paint the lines of the border
         g2d.setColor(Color.BLACK);
         g2d.drawRect(x, y, width - 1, this.titleHeight);
         g2d.drawRect(x, y + this.titleHeight, width - 1, height - this.titleHeight - 1);

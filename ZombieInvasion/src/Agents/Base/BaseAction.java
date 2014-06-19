@@ -73,7 +73,7 @@ public abstract class BaseAction implements Action {
      * @return the integer value of the Y component
      */
     public double getDirectionY() {
-        return this.getDirectionY();
+        return this.direction.getDirectionY();
     }
     
     /**

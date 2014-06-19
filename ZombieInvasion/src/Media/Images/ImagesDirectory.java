@@ -32,6 +32,7 @@ public class ImagesDirectory {
                               VACCINE_IMAGE, WALL_IMAGE, WALL_FORBIDDEN_IMAGE;
     
     static {
+        //Read all the images used in the application
         try {
             APPLICATION_ICON_IMAGE  = ImageIO.read(ImagesDirectory.class.getResource("ApplicationIcon.png"));
             APPLICATION_TITLE_IMAGE = ImageIO.read(ImagesDirectory.class.getResource("ApplicationTitle.png"));

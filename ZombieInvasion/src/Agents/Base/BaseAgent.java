@@ -34,6 +34,12 @@ import java.util.Random;
  * @author Xavier
  */
 public abstract class BaseAgent<PerceptionsType extends BasePerceptions, ActionType extends BaseAction> implements Agent {
+    
+    /**
+     * Agent's mininimum allowed distance to a wall.
+     */
+    protected final double AGENT_MIN_DIST;
+    
     //Attributes
     
     /**
@@ -56,12 +62,19 @@ public abstract class BaseAgent<PerceptionsType extends BasePerceptions, ActionT
      */
     protected final int visionDistance;
     
+    /**
+     * Agent's speed in the environment
+     */
+    protected final int speed;
+    
     //Public Constructors
-    public BaseAgent(int agentWidth, int agentHeight, int visionDistance) {
+    public BaseAgent(int agentWidth, int agentHeight, int visionDistance, int speed) {
         this.rnd            = new Random();
         this.agentWidth     = agentWidth;
         this.agentHeight    = agentHeight;
         this.visionDistance = visionDistance;
+        this.speed          = speed;
+        this.AGENT_MIN_DIST = Math.hypot(agentWidth, agentHeight) / 2;
     }
     
     //Overriden Methods
@@ -84,14 +97,14 @@ public abstract class BaseAgent<PerceptionsType extends BasePerceptions, ActionT
      * Auxiliary function that the inherited classes can use to perform a random
      * move (normally it should be used when the agent doesn't perceive any enemy)
      * @param maxRotationDegrees Range of degrees of deviation respect current direction
-     * @param minWallDistance Minimum permitted distance from a wall
+     * @param speed Speed of the agent
      * @param walls Walls perceived
      * @param action Action object to modify
      */
-    protected void setMoveWhenThereAreNotEnemies(int maxRotationDegrees, double minWallDistance, 
+    protected void setMoveWhenThereAreNotEnemies(int maxRotationDegrees, int speed, 
                                                  Collection<Line2D> walls, ActionType action) {
         int degrees;
-        double angle, wallDistance;
+        double angle, newX, newY;
         Vector2D wallNormalVector;
         
         //Get the degrees of deviation
@@ -102,10 +115,15 @@ public abstract class BaseAgent<PerceptionsType extends BasePerceptions, ActionT
         
         //check if the agent is going to hit a wall
         for(Line2D wall: walls) {
-            wallDistance     = this.getDistance(wall);
             wallNormalVector = this.getNormalVector(wall);
             
-            if(wallDistance < minWallDistance) {
+            //Calculate the new position of the agent (remember: the coordinates' origin point is 
+            //the current agent's position). 
+            //NOTE: AGENT_MIN_DIST is a buffer be sure that the new position is too near to the wall
+            newX = (this.AGENT_MIN_DIST + speed) * action.getDirectionX();
+            newY = (this.AGENT_MIN_DIST + speed) * action.getDirectionY();
+           
+            if(wall.intersectsLine(0, 0, newX, newY)) {
                 angle = action.getDirection().getAngle(wallNormalVector);
                 
                 if(angle > Math.PI / 2) {

@@ -37,11 +37,6 @@ public class HumanAgent extends BaseAgent<HumanPerceptions, HumanAction> {
     private final static int MOVEMENT_DEGREES = 90;
     
     /**
-     * Minimum allowed distance to a wall.
-     */
-    private final double MIN_WALL_DISTANCE;
-    
-    /**
      * Minimum allowed safe distance to a zombie.
      */
     private final double SAFE_DISTANCE;
@@ -53,11 +48,10 @@ public class HumanAgent extends BaseAgent<HumanPerceptions, HumanAction> {
     private HumanAction action;
     
     //Public Constructors
-    public HumanAgent(int agentWidth, int agentHeight, int visionDistance) {
-        super(agentWidth, agentHeight, visionDistance);
+    public HumanAgent(int agentWidth, int agentHeight, int visionDistance, int speed) {
+        super(agentWidth, agentHeight, visionDistance, speed);
         
         this.action            = new HumanAction();
-        this.MIN_WALL_DISTANCE = Math.hypot(agentWidth, agentHeight) / 2 + 1;
         this.SAFE_DISTANCE     = Math.max(visionDistance / 2, 
                                           1.5 * Math.hypot(agentWidth, agentHeight));
         
@@ -87,7 +81,7 @@ public class HumanAgent extends BaseAgent<HumanPerceptions, HumanAction> {
             this.setMoveWhenThereAreZombies(vaccinated, armed, nearHumans, nearZombies, walls);
         }
         else {
-            this.setMoveWhenThereAreNotEnemies(HumanAgent.MOVEMENT_DEGREES, this.MIN_WALL_DISTANCE, 
+            this.setMoveWhenThereAreNotEnemies(HumanAgent.MOVEMENT_DEGREES, this.speed, 
                                                walls, this.action);
         }
         
